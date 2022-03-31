@@ -5,8 +5,11 @@ def specifyConnectionServer():
     ip = input("Server: What ip would you like to host on?: ")
     port = input("Server: What port would you like to host on?: ")
 
-    if (ip == "lh"):
+    if (ip == "lh1"):
         ip = "127.0.0.1"
+    
+    elif (ip == "lh0"):
+        ip = "127.0.0.0"   
 
     if (port == "a"):
         port = "2000"
@@ -19,8 +22,11 @@ def specifyConnectionClient():
     ip = input("Client: What ip would you like to connect to?: ")
     port = input("Client: What port would you like to connect to?: ")
 
-    if (ip == "lh"):
+    if (ip == "lh1"):
         ip = "127.0.0.1"
+    
+    elif (ip == "lh0"):
+        ip = "127.0.0.0"    
 
     if (port == "a"):
         port = "2000"
