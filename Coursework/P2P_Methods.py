@@ -1,5 +1,6 @@
 import socket
 import os
+from tokenize import String
 
 bufferSize  = 256
 
@@ -8,41 +9,42 @@ def p2pStartClient(client):
     clientIP     = client[0]
     clientPort   = client[1]
 
-    readDirectory()
-
-    # Create a UDP socket
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
-    # Send to server using socket
     UDPClientSocket.connect(serverAddressPort)
-    print("\nUDP client up!\nClientIP: "+str(clientIP)+"\nclientPort: "+str(clientPort)+"\n")
+    print("\nUDP client up connecting to!\nClientIP: "+str(clientIP)+"\nclientPort: "+str(clientPort)+"\n")
 
     while True:
-        clientMsg = str.encode(input())
+        decodedMsg = input()
+        clientMsg = str.encode(decodedMsg)
         UDPClientSocket.send(clientMsg)
 
-        if (clientMsg.decode() == "givelist"):
-            returnMsg = UDPClientSocket.recvfrom(bufferSize)
-            message = returnMsg[0]
-            address = returnMsg[1]
-            returnMessage = f"{address} || {message.decode()}"
-            print(returnMessage)
+        if (decodedMsg == "givelist"):
+            request = UDPClientSocket.recvfrom(bufferSize)
+            message = request[0]
+            address = request[1]
+            clientMessage = f"{address} || {message.decode()}"
+            print(clientMessage) # printing which file I want
+            
+            whichFile= input()
+            UDPClientSocket.sendto(str.encode(whichFile), address) # sending back which file I want
+
+            print("I sent da stuff waiting for return")
+            dataReturn = UDPClientSocket.recvfrom(bufferSize)
+            message = dataReturn[0]
+            address = dataReturn[1]
+            clientMessage = f"{message.decode()}" # seeing what is replied back
+            print(clientMessage)
+
 
 def p2pStartServer(server):
     serverIP     = server[0]
     serverPort   = server[1]
 
-
-    # Create a datagram socket
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
-    # Bind to address and ip
     UDPServerSocket.bind((serverIP, serverPort)) 
     print("\nUDP Server up! \nServerIP: "+str(serverIP)+"\nServerPort: "+str(serverPort)+"\n")
 
-    # Listen for incoming datagrams
     while True:
-
         bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
         message = bytesAddressPair[0]
         address = bytesAddressPair[1]
@@ -51,15 +53,23 @@ def p2pStartServer(server):
         print(clientMessage)
 
         if (message.decode() == "givelist"):
-            # this will respond to client A from server B...
-            array = ["A","B","C","D"] 
-            itemList = ""
-            for x in array:
-                itemList = itemList + " " + x 
-            requestMsg = str.encode(itemList)
-            UDPServerSocket.send(requestMsg)
+            txtfiles = ""
+            files = os.listdir('./resources')
+            for x in files:
+                txtfiles = x + ", " + txtfiles
+            txtfiles = "["+ txtfiles +"]" + "\nWhich text file would you like to see?"
+            UDPServerSocket.sendto(str.encode(txtfiles), address)
 
-def readDirectory():
-    txtfiles = []
-    files = os.listdir('./resources')
-    print(files)
+            reply = UDPServerSocket.recvfrom(bufferSize) # this will recieve a number for which file we want to see
+            message = reply[0]
+            address = reply[1]
+
+            requestedNumberDecoded = message.decode()
+            requestedNumberInt = int(requestedNumberDecoded)
+            requestedFileName = files[requestedNumberInt-1]
+            print(requestedFileName)
+            fileLocation = "./resources/"+requestedFileName
+            txt = open(fileLocation, "r")
+            fileData = txt.read() 
+            print(fileData)
+            UDPServerSocket.sendto(str.encode(fileData), address)
