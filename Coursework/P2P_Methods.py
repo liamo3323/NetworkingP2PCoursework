@@ -5,6 +5,7 @@ import time
 
 global bufferSize
 global headerSize
+global dataSize
 
 bufferSize  = 128 # each character is a singular byte
 headerSize = 8
@@ -12,7 +13,7 @@ dataSize = bufferSize-headerSize
 
 #Todo List! 
 # - ask if a message can be sent without a handshake???
-# - allocate header || Header Byte format: 1- Type, 2- Package Num, 3- Total Package Num, 4- Current Package Num, 5+6- Checksum, 7+8-Future Proof ||
+# *|| Header Byte format: 1- Type, 2- Package Num, 3- Total Package Num, 4- Current Package Num, 5+6- Checksum, 7+8-Future Proof ||
 
 # - handshake command
 
@@ -29,14 +30,13 @@ def p2pStartClient(connectTo):
 
     while True:
         clientInput = input() # client will always request user input
-        encodedClientInput = encodeData(clientInput)
         # msg does not need to be decoded because its client input
         if (clientInput == "givelist"):
-            clientSocket.send(encodedClientInput)
+            clientSocket.send(encodeData(clientInput))
             requestListClient(clientSocket)
         
         else: 
-            clientSocket.send(encodedClientInput)
+            clientSocket.send(encodeData(clientInput))
 
 ################# Server Loop #################
 
@@ -80,7 +80,7 @@ def requestListServer(socket, hostAddress):
     for x in files:
         txtfiles = x + ", " + txtfiles
     txtfiles = "["+ txtfiles +"]" + "\nWhich text file would you like to see?"
-    sendMessage(txtfiles, socket, hostAddress)        # socket.sendto(encodeData(txtfiles), hostAddress)
+    sendMessageEncode(txtfiles, socket, hostAddress) 
 
     ######### awaiting reply from file list ##########
     reply = socket.recvfrom(bufferSize) # this will recieve a number for which file we want to see
@@ -95,7 +95,7 @@ def requestListServer(socket, hostAddress):
     txt = open(fileLocation, "r")
     fileData = txt.read() 
     print("Sent requested file!")
-    sendMessage(fileData, socket, address)      #socket.sendto(encodeData(fileData), address)
+    sendMessageEncode(fileData, socket, address) 
 
 ####################################################################
 
@@ -107,36 +107,73 @@ def requestListClient(socket):
     print(clientMessage) # printing which file I want
 
     fileSelection= input()
-    sendMessage(fileSelection, socket, address)        #socket.sendto(encodeData(fileSelection), address) # sending back which file I want
+    sendMessageEncode(fileSelection, socket, address) 
 
-    print("I sent da stuff waiting for return")
     dataReturn = socket.recvfrom(bufferSize)
     message = dataReturn[0]
     address = dataReturn[1]
     clientMessage = f"{decode(message)}" # seeing what is replied back
     print(clientMessage)
 
-def encodeData(dataInputWithHeader): # Method that will take input and put it into an array and encode it
-    tempArr = ""
-    encodedMsg = ""
-
-    # temp header setup
-    for x in range(headerSize):
-        tempArr = tempArr + str(x)
-    
-    # tagging data to be passed along to the header
-    encodedMsg = tempArr + dataInputWithHeader
-
-    return bytes(encodedMsg, 'utf-8')
-
 def decode(dataInput):
     decodedData = dataInput.decode()
     message = decodedData[8:]
     return message
 
-def checkMessageLength(message):
-    return len(message.encode('utf-8'))
+def sendMessageEncode(decodedData, socket, targetAddress):
 
-def sendMessage(message, socket, targetAddress):
-    #socket.sendto(encodeData(fileSelection), address)
-    socket.sendto(encodeData(message), targetAddress)
+    # * when making an encoded message the header and body of the data is being encoded in the same section 
+
+    type = 0             # ? Not sure what this is gotta ask
+    packetTot = 0
+    currentPacket = 0
+    checkSum = 0
+    extra = 0
+
+    byteLength = len(decodedData.encode('utf-8')) # length of data that needs to be sent
+    #  dataSize = bufferSize-headerSize
+    packetNum = (byteLength/dataSize)+1 # number of packets that needs to be sent         
+    
+    #for loop to send divided up packets 
+    # I should be using [?:?] function to divide up the packets... 
+    for x in range (packetNum):
+        # * imagine 2 packets for size 180 so 120 and 60 so its from 0:120 then 120:180 --> so its loop counter - 1 times dataSize : loop counter times dataSize if shooting data do + missing amount
+        # ! -- Please make this not scuffed --
+        loopCtr = 0
+        start = (loopCtr-1)*dataSize
+        end = loopCtr*dataSize
+        if (end > byteLength):
+            end = start+(byteLength-start)
+        # ! ----------------------------------
+        decodedPacketData = decodedData[start:end]
+        
+        encodedPacketData = bytes(decodedPacketData, 'utf-8')
+
+
+        # * 
+
+        # ! THE FINAL STEP
+        socket.sendto(encodedPacketData, targetAddress)
+    
+    # todo: gotta do server side constant listening 
+
+def encodeData(dataInputWithHeader, packetTot, currentPacket): # Method that will take input and put it into an array and encode it
+
+    type = 0             # ? Not sure what this is gotta ask
+    packetTot = 0
+    currentPacket = 0
+    checkSum = 0
+    extra = 0
+
+    byteHeader = (type.to_bytes(1, 'little') 
+    + currentPacket.to_bytes(1, 'little') 
+    + packetTot.to_bytes(1, 'little') 
+    + checkSum.to_bytes(1, 'little') 
+    + extra.to_bytes(headerSize-2, 'little'))
+
+    header = bytearray(byteHeader)
+    # ! they are both byte arrays so TECHNICALLY should be able to concattonate
+    encodedHeader.append(encodedMsg)
+    
+    
+    return encodedHeader
