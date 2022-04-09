@@ -1,6 +1,22 @@
-from P2P_Methods import p2pStartClient, p2pStartServer
+from server import server
+from client import client
 from threading import Thread
 import sys
+
+BUFFERSIZE = 32     # total buffer size
+HEADER = 6          # total size allocated to header
+
+# COPY PASTE
+# python3 main.py 20001 20000
+# python3 main.py 20000 20001
+
+# todo:
+# - Agree on a buffer size (maybe use the smallest bufferSize betwewen the 2)
+# - initial handshake needs to exchange an agreed buffer size
+#       - there needs to be a minimum buffer size of at least 16 so that it is possible to swap bufersizes 
+
+# ? FUTURE
+    # ? checksum
 
 def specifyConnectionServer():
 
@@ -53,10 +69,9 @@ def specifyConnectionClient():
          
     return [ip, int(port)]
 
-
-client = specifyConnectionClient()
-server = specifyConnectionServer()
+connectionAddress = specifyConnectionClient()
+hostAddress = specifyConnectionServer()
 
 if __name__ == '__main__':
-    Thread(target = p2pStartServer, args=(server,)).start()
-    Thread(target = p2pStartClient, args=(client,)).start()
+    Thread(target = server, args=(hostAddress,)).start()
+    Thread(target = client, args=(connectionAddress,)).start()
