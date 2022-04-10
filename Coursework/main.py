@@ -1,10 +1,7 @@
-from server import server
-from client import client
+from server import serverStart
+from client import clientStart
 from threading import Thread
 import sys
-
-BUFFERSIZE = 32     # total buffer size
-HEADER = 6          # total size allocated to header
 
 # COPY PASTE
 # python3 main.py 20001 20000
@@ -73,5 +70,5 @@ connectionAddress = specifyConnectionClient()
 hostAddress = specifyConnectionServer()
 
 if __name__ == '__main__':
-    Thread(target = server, args=(hostAddress,)).start()
-    Thread(target = client, args=(connectionAddress,)).start()
+    Thread(target = serverStart, args=(hostAddress,)).start()
+    Thread(target = clientStart, args=(connectionAddress,)).start()

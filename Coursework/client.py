@@ -1,9 +1,14 @@
 import socket
 from typing import Tuple
-from main import BUFFERSIZE, HEAD
-from header import headerCreator, MessageType
+from headerEnums import MessageType
+from packet_class import packet
 
-def client(connectionAddress, bufferSize): 
+
+buffersize = 32     # total buffer size
+header = 6          # total size allocated to header
+
+
+def clientStart(connectionAddress): 
 
     # * Address where client wants to connect to
     targetIP     = connectionAddress[0]
@@ -16,19 +21,14 @@ def client(connectionAddress, bufferSize):
     # -------------------------------------------------------
     while True:
         
-        initialHandshakeClient() # !client needs to do a ping to the server asking for agreed bufferSize
+        #initialHandshakeClient() # !client needs to do a ping to the server asking for agreed bufferSize
 
         # ? ----
 
         clientInput = input() # string input --> server 
 
         if (clientInput == "givelist"):
-            print ()
+            packetGiveList = packet(MessageType.hnd, 0, 0, targetIP, targetPort)
         else:
             print ()
 
-def initialHandshakeClient(socket: socket.socket, targetAddress: Tuple):
-    initialHandshakeHeaderE = headerCreator(MessageType.h, 1)
-    clientBufferSizeE = BUFFERSIZE.encode('utf-8')
-    requestE = initialHandshakeHeaderE + clientBufferSizeE
-    socket.sendto(requestE, targetAddress)
