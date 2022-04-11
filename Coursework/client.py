@@ -2,11 +2,10 @@ import socket
 from typing import Tuple
 from headerEnums import MessageType
 from packet_class import packet
-
-
-buffersize = 32     # total buffer size
-header = 6          # total size allocated to header
-
+from methods import calcPacketSize
+from constants import hr_Size, bf_Size
+bufferSize = bf_Size
+headerSize = hr_Size
 
 def clientStart(connectionAddress): 
 
@@ -21,14 +20,22 @@ def clientStart(connectionAddress):
     # -------------------------------------------------------
     while True:
         
-        #initialHandshakeClient() # !client needs to do a ping to the server asking for agreed bufferSize
-
+        data = str(bf_Size)
+        packetDataSize = bf_Size - hr_Size
+        packetInitialHandshake = packet(MessageType.hnd, calcPacketSize(packetDataSize,data) , data.encode('utf-8'), targetIP, targetPort)
+        initialHandshakeClient(clientSocket, packetInitialHandshake) 
+        
         # ? ----
 
         clientInput = input() # string input --> server 
 
         if (clientInput == "givelist"):
-            packetGiveList = packet(MessageType.hnd, 0, 0, targetIP, targetPort)
+            packetGiveList = packet(MessageType.givelist, 0, 0, targetIP, targetPort)
+        
         else:
-            print ()
+            print ("WRONG!")
+
+def initialHandshakeClient(socket: socket.socket, packet: packet, ):
+    socket.sendto(packet.packet, packet.address)
+    initialHandshake = socket.recvfrom(bufferSize)
 
