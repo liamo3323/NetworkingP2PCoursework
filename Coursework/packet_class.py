@@ -1,17 +1,16 @@
 from headerEnums import MessageType
 from constants import hr_Size
 
-class packet:
-  def __init__(self, type: MessageType, packetTot:int, packetData:bytes, address:int, port:int):
+class Packet:
+  def __init__(self, type: MessageType, packetNum:int, packetTot:int, packetData:bytes, address: str, port: int):
     
     #* [ packet1 = packet(...) ] <-- creating a packet object \
 
     self.type = type.value
-    self.currentPacket = 0
+    self.currentPacket = packetNum
     self.packetTot = packetTot
     self.checkSum = 0
     self.extra = 0
-
 
     self.encodedHeader = (self.type.to_bytes(1, 'little') 
     + self.currentPacket.to_bytes(1, 'little') 
@@ -21,6 +20,15 @@ class packet:
 
     self.packetData = packetData
     self.packet = self.encodedHeader + self.packetData
-    self.address = address
+    self.ip = address
     self.port = port
     self.address = (address, port)
+
+def packetBuilder(inPacket:Packet): #! DO NOT TOUCH <- shove in message from socket and it will make an obj
+  print("ejweja")
+  packetHeader = (inPacket[0])[:6]
+  packetData = (inPacket[0])[6:]
+  packetAdd = inPacket[1]
+  packetIP = packetAdd[0]
+  packetPort = packetAdd[1]
+  return(Packet(  MessageType(packetHeader[1]), packetHeader[2], packetHeader[3],  packetData,   packetIP, packetPort)  )

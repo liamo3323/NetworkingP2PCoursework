@@ -8,9 +8,12 @@ import sys
 # python3 main.py 20000 20001
 
 # todo:
-# - Agree on a buffer size (maybe use the smallest bufferSize betwewen the 2)
-# - initial handshake needs to exchange an agreed buffer size
-#       - there needs to be a minimum buffer size of at least 16 so that it is possible to swap bufersizes 
+# - whenever a packet is going to be recieved it must check how many are going to be recieved 
+    #- first packet will be 0th packet and start the request
+    #- then it will keep on sending packets until finished
+    #- while packets are being recieved the client will reply with ack
+        #- if server doesn't recieve ack resend that packet
+# - request and recieving of list of available files...
 
 # ? FUTURE
     # ? checksum
