@@ -24,9 +24,8 @@ def clientStart(connectionAddress):
     
     print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n")
     
-    print("Loading...")
     time.sleep(2)
-    print("done")
+
 
     initialHandshakeClient() 
     # -------------------------------------------------------
@@ -40,10 +39,9 @@ def initialHandshakeClient():
 
     global bufferSize
     packetInitialHandshake = Packet(MessageType.hnd, 1, calcPacketSize(bufferSize-headerSize, bufferSize) , str(bufferSize).encode('utf-8'), targetIP, targetPort)    
-    #multiSendPacket(packetInitialHandshake, clientSocket, bufferSize)
-    clientSocket.sendto(packetInitialHandshake.packet, packetInitialHandshake.address)
+    multiSendPacket(packetInitialHandshake, clientSocket, bufferSize)
+    #clientSocket.sendto(packetInitialHandshake.packet, packetInitialHandshake.address)
     
     packets = multiPacketHandle(clientSocket, bufferSize)
 
     bufferSize = int( messageBuilder(packets) )
-    print("The agreed upon buffer size is "+ str(bufferSize))
