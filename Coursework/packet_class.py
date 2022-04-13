@@ -1,3 +1,4 @@
+from typing import Tuple
 from headerEnums import MessageType
 from constants import hr_Size
 
@@ -24,11 +25,16 @@ class Packet:
     self.port = port
     self.address = (address, port)
 
-def packetBuilder(inPacket:Packet): #! DO NOT TOUCH <- shove in message from socket and it will make an obj
-  print("ejweja")
-  packetHeader = (inPacket[0])[:6]
-  packetData = (inPacket[0])[6:]
-  packetAdd = inPacket[1]
-  packetIP = packetAdd[0]
-  packetPort = packetAdd[1]
+def packetBuilder(inPacket: Tuple)-> Packet: #! DO NOT TOUCH <- shove in message from socket and it will make an obj
+  #print(inPacket)
+
+  pData = inPacket[0]
+  #print(pData)
+  pAddress = inPacket[1]
+  #print(pAddress)
+
+  packetHeader = pData[:6]
+  packetData = pData[6:]
+  packetIP = pAddress[0]
+  packetPort = pAddress[1]
   return(Packet(  MessageType(packetHeader[1]), packetHeader[2], packetHeader[3],  packetData,   packetIP, packetPort)  )
