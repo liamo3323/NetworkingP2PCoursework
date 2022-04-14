@@ -1,14 +1,14 @@
+from email.message import Message
 from typing import Tuple
 from headerEnums import MessageType
 from constants import hr_Size
 
 class Packet:
-  def __init__(self, type: MessageType, packetNum:int, packetTot:int, packetData:bytes, address: str, port: int):
+  def __init__(self, type: MessageType, packetTot:int, packetData:bytes, address: str, port: int):
     
     #* [ packet1 = packet(...) ] <-- creating a packet object \
-
     self.type = type.value
-    self.currentPacket = packetNum
+    self.currentPacket = 1
     self.packetTot = packetTot
     self.checkSum = 0
     self.extra = 0
@@ -26,15 +26,15 @@ class Packet:
     self.address = (address, port)
 
 def packetBuilder(inPacket: Tuple)-> Packet: #! DO NOT TOUCH <- shove in message from socket and it will make an obj
-  #print(inPacket)
 
   pData = inPacket[0]
-  #print(pData)
   pAddress = inPacket[1]
-  #print(pAddress)
 
-  packetHeader = pData[:6]
-  packetData = pData[6:]
+  packetHeader = pData[:hr_Size]
+  packetData = pData[hr_Size:]
   packetIP = pAddress[0]
   packetPort = pAddress[1]
-  return(Packet(  MessageType(packetHeader[1]), packetHeader[2], packetHeader[3],  packetData,   packetIP, packetPort)  )
+  print("packet Header in builder",packetHeader)
+  print("packet type in builder",packetHeader[0])
+  print("packet tot in builder",packetHeader[2])
+  return(Packet(  MessageType(packetHeader[0]), packetHeader[3],  packetData,   packetIP, packetPort  ) )

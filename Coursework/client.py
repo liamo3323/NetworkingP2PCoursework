@@ -30,7 +30,15 @@ def clientStart(connectionAddress):
     initialHandshakeClient() 
     # -------------------------------------------------------
     while True:
+        
+        #! testing area
+        
+        message = "this is a message that is bigger than 1 buffer size"
+        print(message)
+        multiTest = Packet(MessageType.REQ, calcPacketSize(bufferSize-headerSize, message) , str(message).encode('utf-8'), targetIP, targetPort)    
+        multiSendPacket(multiTest, clientSocket, bufferSize)
         clientInput = input() # string input --> server 
+        exit
 
 def initialHandshakeClient():
     #* client will send a packet to server and confirm agreed buffer size
@@ -38,10 +46,7 @@ def initialHandshakeClient():
     #* said buffer size for all future data sending
 
     global bufferSize
-    packetInitialHandshake = Packet(MessageType.hnd, 1, calcPacketSize(bufferSize-headerSize, bufferSize) , str(bufferSize).encode('utf-8'), targetIP, targetPort)    
+    packetInitialHandshake = Packet(MessageType.HND, calcPacketSize(bufferSize-headerSize, bufferSize) , str(bufferSize).encode('utf-8'), targetIP, targetPort)    
     multiSendPacket(packetInitialHandshake, clientSocket, bufferSize)
-    #clientSocket.sendto(packetInitialHandshake.packet, packetInitialHandshake.address)
-    
     packets = multiPacketHandle(clientSocket, bufferSize)
-
     bufferSize = int( messageBuilder(packets) )

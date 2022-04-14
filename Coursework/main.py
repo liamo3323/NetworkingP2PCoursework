@@ -14,6 +14,10 @@ import sys
     #- while packets are being recieved the client will reply with ack
         #- if server doesn't recieve ack resend that packet
 # - request and recieving of list of available files...
+#- gotta think about how to rebuild the packet of data lol
+#- maybe implement a max bufferSize ? 
+#- change all for loops with while loops with AKGs
+#- add AKG packets in reply
 
 # ? FUTURE
     # ? checksum
