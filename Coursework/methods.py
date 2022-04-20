@@ -1,7 +1,9 @@
+from ipaddress import ip_address
 from packet_class import Packet, packetBuilder
 from headerEnums import MessageType
 import socket
 import math
+import time
 
 def messageBuilder(listPacket:list)-> str:
     data = ""
@@ -15,31 +17,31 @@ def calcPacketSize(dataSize: int, data) -> int:
 
 def multiPacketHandle( socket: socket.socket, bufferSize: int)-> list:
     #* Multi packet handler, if there is only 1 packet return packet
-    packetList = []
-    packet = packetBuilder( socket.recvfrom(bufferSize))
-    packetLoops = packet.packetTot
-    packetList.append(packet)
-
+    
     #! build up the full message
 
+    packetList = []
     while True:
+
         recievedPacket = packetBuilder( socket.recvfrom(bufferSize))
         packetList.append(recievedPacket)
+
+        #print("AKG TOT - ", recievedPacket.packetTot, "  AKG CUR - ", recievedPacket.currentPacket)
+
         akg = recievedPacket
         akg.type = MessageType.ACK
+
         socket.sendto(akg.encodedHeader, akg.address)
         if (akg.currentPacket == akg.packetTot):
             break
-    akg.type = MessageType.FIN
-    socket.sendto(akg.encodedHeader, akg.address)
     
     return(packetList)
 
 def multiSendPacket(packet: Packet, socket: socket.socket, bufferSize: int):
-    #? logic is that request will always send the first packtet NOT send a zero.th packet 
-
-    #* break down the message into smaller packets then send them in groups
     
+    #* break down the message into smaller packets then send them in groups
+
+    ctr = 1
     packetList = [] # store packets here to be sent and can be reqeusted again
     for x in range (packet.packetTot):
         start = x   * bufferSize
@@ -48,17 +50,19 @@ def multiSendPacket(packet: Packet, socket: socket.socket, bufferSize: int):
             end = end-(end-len(packet.packetData))
         splitMsg = packet.packetData[start:end]
         packetToSend = Packet( MessageType(packet.type), packet.packetTot, splitMsg, packet.ip, packet.port)
-        packetList.append(packetToSend)
-    ctr = 1
-    for x in packetList:
-        x.currentPacket = ctr
-        ctr = ctr + 1
+        packetToSend.currentPacket = ctr
+        packetList.append(packetToSend) # <-- main message is broken up into this list
+        ctr = ctr +  1
+        time.sleep(1)
 
-    socket.send(packetList[0].packet, packetList[0].address)
-    while True:
+
+
+    ctr = 0
+    while True: #! this doesnt support ack not returning yet! 
+        socket.sendto(packetList[ctr].packet, packetList[ctr].address)
         akg = packetBuilder( socket.recvfrom(bufferSize))
-        if (akg.type == MessageType.FIN):
+        if (akg.currentPacket == akg.packetTot):
             break
-        socket.send(packetList[akg.currentPacket].packet, packetList[akg.currentPacket].address)
+        ctr = ctr + 1
 
     print("All packets sent!!")

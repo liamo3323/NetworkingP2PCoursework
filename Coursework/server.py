@@ -1,8 +1,9 @@
+from http import server
 import socket
 import time
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder
-from methods import calcPacketSize, multiPacketHandle
+from methods import calcPacketSize, multiPacketHandle, messageBuilder, multiSendPacket
 from constants import bf_Size, hr_Size
 global bufferSize
 global headerSize
@@ -33,23 +34,29 @@ def serverStart(hostAddress):
 
     while True:
         #? instead of waiting for an initialHandshake at the start a method that handles requests should be written
+        initialHandshakeServer()
         incomingListener()
 
-def initialHandshakeServer(packet: Packet): 
+def initialHandshakeServer(): 
     #* Server will realize that client is sending a handshake packet
     #* and calculate lowest buffer size between client + server and 
     #* reply the smallest buffer between the two
     
+
     global bufferSize, headerSize
-    initialHandshake = packet
-    recievedValue = int(packet.packetData.decode())
+    
+    #packet = packetBuilder( serverSocket.recvfrom(bufferSize))
+    packet = multiPacketHandle(serverSocket, bufferSize)
+
+    recievedValue = int(messageBuilder(packet))
 
     if (recievedValue < bufferSize):
         print("| Agreeing on smaller buffer size |")
         bufferSize = recievedValue  
  
-    replyBufferVal = Packet(MessageType.HND, calcPacketSize(bufferSize - headerSize, bufferSize) , str(bufferSize).encode('utf-8'), initialHandshake.ip, initialHandshake.port)
-    serverSocket.sendto(replyBufferVal.packet, replyBufferVal.address)
+    replyBufferVal = Packet(MessageType.HND, calcPacketSize(bufferSize - headerSize, bufferSize) , str(bufferSize).encode('utf-8'), packet[0].ip, packet[0].port)
+    multiSendPacket(replyBufferVal, serverSocket, bufferSize)
+    #serverSocket.sendto(replyBufferVal.packet, replyBufferVal.address)
 
 
 def incomingListener():

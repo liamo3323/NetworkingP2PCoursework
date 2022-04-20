@@ -27,6 +27,8 @@ class Packet:
 
 def packetBuilder(inPacket: Tuple)-> Packet: #! DO NOT TOUCH <- shove in message from socket and it will make an obj
 
+  #- Header Format = Type | Cur Pack | Tot Pack | Check Sum | Extra 
+
   pData = inPacket[0]
   pAddress = inPacket[1]
 
@@ -34,7 +36,4 @@ def packetBuilder(inPacket: Tuple)-> Packet: #! DO NOT TOUCH <- shove in message
   packetData = pData[hr_Size:]
   packetIP = pAddress[0]
   packetPort = pAddress[1]
-  print("packet Header in builder",packetHeader)
-  print("packet type in builder",packetHeader[0])
-  print("packet tot in builder",packetHeader[2])
-  return(Packet(  MessageType(packetHeader[0]), packetHeader[3],  packetData,   packetIP, packetPort  ) )
+  return(Packet(  MessageType(packetHeader[0]), packetHeader[2],  packetData,   packetIP, packetPort  ) )
