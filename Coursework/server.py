@@ -65,7 +65,8 @@ def initialHandshakeServer():
         print("| Agreeing on smaller buffer size |")
         bufferSize = recievedValue  
  
-    replyBufferVal = Packet(MessageType.HND, calcPacketSize(bufferSize - headerSize, bufferSize) , str(bufferSize).encode('utf-8'), packet[0].ip, packet[0].port)
+    replyPacket:Packet = packet[0]
+    replyBufferVal = Packet(MessageType.HND, replyPacket.currentPacket, calcPacketSize(bufferSize - headerSize, bufferSize) , replyPacket.checkSum, replyPacket.headCheckSum, replyPacket.req, str(bufferSize).encode('utf-8'), replyPacket.ip, replyPacket.port)
     multiSendPacket(replyBufferVal, serverSocket, bufferSize)
 
 def handler():

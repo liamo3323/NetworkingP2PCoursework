@@ -49,7 +49,7 @@ def multiSendPacket(packet: Packet, socket: socket.socket, bufferSize: int):
         if ( end > len(packet.packetData)):
             end = end-(end-len(packet.packetData))
         splitMsg = packet.packetData[start:end]
-        packetToSend = Packet( MessageType(packet.type), packet.packetTot, splitMsg, packet.ip, packet.port)
+        packetToSend = Packet( MessageType(packet.type), packet.currentPacket, packet.packetTot, packet.checkSum, packet.headCheckSum, packet.req, splitMsg, packet.ip, packet.port)
         packetToSend.currentPacket = ctr
         packetList.append(packetToSend) # <-- main message is broken up into this list
         ctr = ctr +  1
