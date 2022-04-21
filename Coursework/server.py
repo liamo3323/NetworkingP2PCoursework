@@ -24,6 +24,9 @@ def serverStart(hostAddress):
     serverSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     serverSocket.bind((hostIP, hostPort))
 
+    # Keeping track of each connected client
+    clientConnections = []
+
     print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n")
     
     time.sleep(1)    
@@ -56,20 +59,10 @@ def initialHandshakeServer():
  
     replyBufferVal = Packet(MessageType.HND, calcPacketSize(bufferSize - headerSize, bufferSize) , str(bufferSize).encode('utf-8'), packet[0].ip, packet[0].port)
     multiSendPacket(replyBufferVal, serverSocket, bufferSize)
-    #serverSocket.sendto(replyBufferVal.packet, replyBufferVal.address)
-
 
 def incomingListener():
     packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-    if (packet.type == 0): #-Initial HandShake
-        initialHandshakeServer(packet)
-    elif (packet.type == 1): #-request
-        print()
-    elif (packet.type == 2): #-finished data transmission
-        print()
-    elif (packet.type == 3): #-give list of files
-        print()
-    elif (packet.type == 4): #-request specific docu
+    if (packet.type == 1): #-request
         print()
     else:
         print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")

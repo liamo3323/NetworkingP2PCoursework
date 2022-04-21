@@ -8,16 +8,13 @@ import sys
 # python3 main.py 20000 20001
 
 # todo:
-# - whenever a packet is going to be recieved it must check how many are going to be recieved 
-    #- first packet will be 0th packet and start the request
-    #- then it will keep on sending packets until finished
-    #- while packets are being recieved the client will reply with ack
-        #- if server doesn't recieve ack resend that packet
-# - request and recieving of list of available files...
-#- gotta think about how to rebuild the packet of data lol
-#- maybe implement a max bufferSize ? 
-#- change all for loops with while loops with AKGs
-#- add AKG packets in reply
+# - add a package handler 
+    #- so like the server will always be in the "main loop handler"
+    #- this is so that each client connected can connected and get a reply to waht is needed
+    #- so like the server can track what each client desires 
+    #- as well as each client needs to be registered on the server at handshake
+    #- so each client (IP + HOST) and maybe bufferSize is tracked
+    #- potentially dropped after request is finished   
 
 # ? FUTURE
     # ? checksum
