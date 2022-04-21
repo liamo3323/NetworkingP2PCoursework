@@ -61,6 +61,7 @@ def multiSendPacket(packet: Packet, socket: socket.socket, bufferSize: int):
     while True: #! this doesnt support ack not returning yet! 
         socket.sendto(packetList[ctr].packet, packetList[ctr].address)
         akg = packetBuilder( socket.recvfrom(bufferSize))
+        print("current packet count: --", akg.currentPacket, "packet total: --", akg.packetTot)
         if (akg.currentPacket == akg.packetTot):
             break
         ctr = ctr + 1

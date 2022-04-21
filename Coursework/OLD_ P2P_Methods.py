@@ -84,8 +84,7 @@ def requestListServer(socket, hostAddress):
     requestedNumberInt = int(requestedNumberDecoded)
     requestedFileName = files[requestedNumberInt-1]
     print(requestedFileName)
-    fileLocation = "./resources/"+requestedFileName
-    txt = open(fileLocation, "r")
+
     fileData = txt.read() 
     print("Sent requested file!")
     sendMessage(fileData, socket, address) 
