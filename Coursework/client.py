@@ -1,3 +1,4 @@
+from email.mime import multipart
 import socket
 import time
 from typing import Tuple
@@ -11,7 +12,6 @@ bufferSize = bf_Size
 headerSize = hr_Size
 
 def clientStart(connectionAddress): 
-
     global clientSocket
     global targetIP
     global targetPort
@@ -24,29 +24,40 @@ def clientStart(connectionAddress):
     
     print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n")
     
-    time.sleep(2)
-
+    time.sleep(1)
+    print("client done")
 
     initialHandshakeClient() 
     # -------------------------------------------------------
     while True:
         
-        #! testing area
-        
-        message = "this is a message that is bigger than 1 buffer size"
-        print(message)
-        multiTest = Packet(MessageType.REQ, 1, calcPacketSize(bufferSize-headerSize, message), 0, 0, 0 , str(message).encode('utf-8'), targetIP, targetPort)    
-        multiSendPacket(multiTest, clientSocket, bufferSize)
         clientInput = input() # string input --> server 
-        exit
+        clientReq = genericRequestBuilder(clientInput)
+        multiSendPacket (clientReq, clientSocket, bufferSize)
+        response = multiPacketHandle(clientSocket, bufferSize)
+        print("hi")
+        print(messageBuilder(response))
 
 def initialHandshakeClient():
+
     #* client will send a packet to server and confirm agreed buffer size
     #* and get a responce of the smallest packet between the two and use 
     #* said buffer size for all future data sending
 
-    global bufferSize
-    packetInitialHandshake = Packet(MessageType.HND, 1, calcPacketSize(bufferSize-headerSize, bufferSize), 0, 0, 0, str(bufferSize).encode('utf-8'), targetIP, targetPort)    
-    multiSendPacket(packetInitialHandshake, clientSocket, bufferSize)
-    packets = multiPacketHandle(clientSocket, bufferSize)
-    bufferSize = int( messageBuilder(packets) )
+    #! -----------------------------------Buffer Exchange has been removed---------------------------------------
+    # global bufferSize
+    # packetInitialHandshake = Packet(MessageType.HND, 1, calcPacketSize(bufferSize-headerSize, bufferSize), 0, 0, 0, str(bufferSize).encode('utf-8'), targetIP, targetPort)    
+    # multiSendPacket(packetInitialHandshake, clientSocket, bufferSize)
+    # packets = multiPacketHandle(clientSocket, bufferSize)
+    # bufferSize = int( messageBuilder(packets) )
+    #! ---------------------------------------------------------------------------------------------------------
+    print()
+
+def genericRequestBuilder(clientInput:str) ->Packet:
+    if (clientInput == "givelist"):
+        messType = MessageType.GIV
+
+    return Packet(messType, 1, headerSize, 0, 0, 0, bytes(), targetIP, targetPort)
+
+
+

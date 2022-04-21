@@ -36,16 +36,19 @@ def serverStart(hostAddress):
 
     print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n")
     
-    time.sleep(1)    
-    print("Loading...")
     time.sleep(1)
     fileReadIn()
-    print("done")
+    print("server done")
     # -------------------------------------------------------
 
     while True:
         #? instead of waiting for an initialHandshake at the start a method that handles requests should be written
-        initialHandshakeServer()
+        #initialHandshakeServer()
+
+        #? check if this is possible so client is able to see list of files on connection???
+        # packet = packetBuilder( serverSocket.recvfrom(bufferSize))
+        # printFilesList(packet)
+
         handler()
 
 def initialHandshakeServer(): 
@@ -53,28 +56,31 @@ def initialHandshakeServer():
     #* and calculate lowest buffer size between client + server and 
     #* reply the smallest buffer between the two
     
-
-    global bufferSize, headerSize
-    
+    print()
+    #! -------------------------------buffer exchange has been removed---------------------------    
     #packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-    packet = multiPacketHandle(serverSocket, bufferSize)
+    # packet = multiPacketHandle(serverSocket, bufferSize)
 
-    recievedValue = int(messageBuilder(packet))
+    # recievedValue = int(messageBuilder(packet))
 
-    if (recievedValue < bufferSize):
-        print("| Agreeing on smaller buffer size |")
-        bufferSize = recievedValue  
+    # if (recievedValue < bufferSize):
+    #     print("| Agreeing on smaller buffer size |")
+    #     bufferSize = recievedValue  
  
-    replyPacket:Packet = packet[0]
-    replyBufferVal = Packet(MessageType.HND, replyPacket.currentPacket, calcPacketSize(bufferSize - headerSize, bufferSize) , replyPacket.checkSum, replyPacket.headCheckSum, replyPacket.req, str(bufferSize).encode('utf-8'), replyPacket.ip, replyPacket.port)
-    multiSendPacket(replyBufferVal, serverSocket, bufferSize)
+    # replyPacket:Packet = packet[0]
+    # replyBufferVal = Packet(MessageType.HND, replyPacket.currentPacket, calcPacketSize(bufferSize - headerSize, bufferSize) , replyPacket.checkSum, replyPacket.headCheckSum, replyPacket.req, str(bufferSize).encode('utf-8'), replyPacket.ip, replyPacket.port)
+    # multiSendPacket(replyBufferVal, serverSocket, bufferSize)
+    #! --------------------------------------------------------------------------------------------
 
 def handler():
     packet = packetBuilder( serverSocket.recvfrom(bufferSize))
     addToConnection(packet)
-
     if (packet.type == 1): #-request
+        fileRequest()
+    elif (packet.type == 2): #-response
         print()
+    elif (packet.type == 3):
+        printFilesList(packet)
     else:
         print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")
 
@@ -99,12 +105,22 @@ def fileReadIn():
     global files
     txtfiles = ""
     files = os.listdir('./resources') # <- this is now a list of files
+    ctr = 0
     for x in files:
-        txtfiles = x + ", " + txtfiles
-    txtfiles = "["+ txtfiles +"]" + "\nWhich text file would you like to see?"
+        txtfiles = str(ctr) + " - " + x + ", \n" + txtfiles
+        ctr = ctr + 1
+    txtfiles = txtfiles + "\nWhich text file would you like to see?"
 
 def returnFileStr(fileInt: int) -> str:
     reqFileName = files[fileInt-1]
     fileLocation = "./resources/"+reqFileName
     file = open(fileLocation, "r")
     return file.read()
+
+def fileRequest():
+    print()
+
+def printFilesList(packet: Packet):
+    packetFiles = Packet(MessageType.GIV, 1, calcPacketSize(bufferSize - headerSize, txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port)
+    print(calcPacketSize(bufferSize - headerSize, txtfiles))
+    multiSendPacket(packetFiles, serverSocket, bufferSize)

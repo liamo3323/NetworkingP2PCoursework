@@ -1,5 +1,5 @@
 from ipaddress import ip_address
-from packet_class import Packet, packetBuilder
+from packet_class import Packet, packetBuilder, objToPacket
 from headerEnums import MessageType
 import socket
 import math
@@ -13,6 +13,8 @@ def messageBuilder(listPacket:list)-> str:
 
 def calcPacketSize(dataSize: int, data) -> int:
     byteLength = len(str(data).encode('utf-8')) 
+    print("encoded message - ", str(data).encode('utf-8') )
+    print("length of encoded message - ", len(str(data).encode('utf-8')), "divided by size - ", dataSize)
     return int(math.ceil(byteLength/dataSize))
 
 def multiPacketHandle( socket: socket.socket, bufferSize: int)-> list:
@@ -26,11 +28,11 @@ def multiPacketHandle( socket: socket.socket, bufferSize: int)-> list:
         recievedPacket = packetBuilder( socket.recvfrom(bufferSize))
         packetList.append(recievedPacket)
 
-        #print("AKG TOT - ", recievedPacket.packetTot, "  AKG CUR - ", recievedPacket.currentPacket)
-
         akg = recievedPacket
         akg.type = MessageType.ACK
 
+        #print("sending: ", akg.encodedHeader)
+        
         socket.sendto(akg.encodedHeader, akg.address)
         if (akg.currentPacket == akg.packetTot):
             break
@@ -53,17 +55,15 @@ def multiSendPacket(packet: Packet, socket: socket.socket, bufferSize: int):
         packetToSend.currentPacket = ctr
         packetList.append(packetToSend) # <-- main message is broken up into this list
         ctr = ctr +  1
-        time.sleep(1)
-
-
 
     ctr = 0
     while True: #! this doesnt support ack not returning yet! 
-        socket.sendto(packetList[ctr].packet, packetList[ctr].address)
+
+        #print("sending: ", objToPacket(packetList[ctr]))
+        
+
+        socket.sendto(objToPacket(packetList[ctr]), packetList[ctr].address)
         akg = packetBuilder( socket.recvfrom(bufferSize))
-        print("current packet count: --", akg.currentPacket, "packet total: --", akg.packetTot)
         if (akg.currentPacket == akg.packetTot):
             break
         ctr = ctr + 1
-
-    print("All packets sent!!")

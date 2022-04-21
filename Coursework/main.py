@@ -16,10 +16,7 @@ import sys
     #- so each client (IP + HOST) and maybe bufferSize is tracked
     #- potentially dropped after request is finished   
 
-
-    #- load in files at server launch
-    #- header should also include reqeusting file
-    #- 
+#! edge case requesting a file that doesnt exist
 
 # ? FUTURE
     # ? checksum
