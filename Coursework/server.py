@@ -1,5 +1,6 @@
 from ast import Str
 from http import server
+from client import genericRequestBuilder
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder
 from methods import calcPacketSize, multiPacketHandle, messageBuilder, multiSendPacket
@@ -76,7 +77,7 @@ def handler():
     packet = packList[0]
     addToConnection(packet)
     if (packet.type == 1): #-request
-        fileRequest()
+        fileRequest(packet)
     elif (packet.type == 2): #-response
         print()
     elif (packet.type == 3):
@@ -84,21 +85,7 @@ def handler():
     else:
         print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")
 
-def checkForExistance(packet: Packet) -> bool:
-    #checks if incoming packet exists in already established connections
 
-    for x in clientConnections:
-        if (x == packet.address):
-            return True
-    return False
-
-def addToConnection(packet: Packet):
-    global clientConnections
-
-    if checkForExistance(packet) is False:
-        clientConnections[ packet.address ] = packet
-    else:
-        print("!!PACKET EXISTS!!")
     
 def fileReadIn():
     global txtfiles
@@ -117,9 +104,31 @@ def returnFileStr(fileInt: int) -> str:
     file = open(fileLocation, "r")
     return file.read()
 
-def fileRequest():
-    print()
+def fileRequest(packet: Packet):
+    clientFile = returnFileStr(packet.req)
+    multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(bufferSize - headerSize, clientFile), 0, 0, packet.req, str(clientFile).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
+
 
 def printFilesList(packet: Packet):
-    packetFiles = Packet(MessageType.GIV, 1, calcPacketSize(bufferSize - headerSize, txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port)
-    multiSendPacket(packetFiles, serverSocket, bufferSize)
+    multiSendPacket(Packet(MessageType.GIV, 1, calcPacketSize(bufferSize - headerSize, txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
+
+
+
+def addToConnection(packet: Packet):
+    #! FOR THE FUTURE
+    global clientConnections
+
+    if checkForExistance(packet) is False:
+        clientConnections[ packet.address ] = packet
+    else:
+        print("!!PACKET EXISTS!!")
+
+
+def checkForExistance(packet: Packet) -> bool:
+    #checks if incoming packet exists in already established connections
+
+    for x in clientConnections:
+        if (x == packet.address):
+            return True
+    return False
+

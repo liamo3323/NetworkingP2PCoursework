@@ -1,6 +1,7 @@
 from email.mime import multipart
 import socket
 import time
+import re
 from typing import Tuple
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder
@@ -27,36 +28,25 @@ def clientStart(connectionAddress):
     print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n")
     print("client done")
 
-    initialHandshakeClient() 
     # -------------------------------------------------------
     while True:
-        
-        clientInput = input() # string input --> server 
-        clientReq = genericRequestBuilder(clientInput)
-        multiSendPacket (clientReq, clientSocket, bufferSize)
-        response = multiPacketHandle(clientSocket, bufferSize)
-        print(messageBuilder(response))
-
-def initialHandshakeClient():
-
-    #* client will send a packet to server and confirm agreed buffer size
-    #* and get a responce of the smallest packet between the two and use 
-    #* said buffer size for all future data sending
-
-    #! -----------------------------------Buffer Exchange has been removed---------------------------------------
-    # global bufferSize
-    # packetInitialHandshake = Packet(MessageType.HND, 1, calcPacketSize(bufferSize-headerSize, bufferSize), 0, 0, 0, str(bufferSize).encode('utf-8'), targetIP, targetPort)    
-    # multiSendPacket(packetInitialHandshake, clientSocket, bufferSize)
-    # packets = multiPacketHandle(clientSocket, bufferSize)
-    # bufferSize = int( messageBuilder(packets) )
-    #! ---------------------------------------------------------------------------------------------------------
-    print()
+        multiSendPacket (genericRequestBuilder(input()), clientSocket, bufferSize)
+        print(messageBuilder(multiPacketHandle(clientSocket, bufferSize)))
 
 def genericRequestBuilder(clientInput:str) ->Packet:
     if (clientInput == "givelist"):
         messType = MessageType.GIV
+        return Packet(messType, 1, calcPacketSize(bufferSize - headerSize, headerSize), 0, 0, 0, bytes(), targetIP, targetPort)
+    elif (re.search("^req", clientInput)):
+        print("Success")
+        number = listToInt(re.findall("\d", clientInput))
+        return Packet(MessageType.REQ, 1, calcPacketSize(bufferSize - headerSize, headerSize), 0, 0, number, bytes(), targetIP, targetPort)
+    else:
+        print("!!!ERROR INVALID REQUEST!!!")
 
-    return Packet(messType, 1, calcPacketSize(bufferSize - headerSize, headerSize), 0, 0, 0, bytes(), targetIP, targetPort)
 
-
-
+def listToInt(list:list)->int:
+    total:str = ""
+    for x in list:
+        total = total + x
+    return int(total)

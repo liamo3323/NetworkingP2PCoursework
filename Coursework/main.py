@@ -8,13 +8,7 @@ import sys
 # python3 main.py 20000 20001
 
 # todo:
-# - add a package handler 
-    #- so like the server will always be in the "main loop handler"
-    #- this is so that each client connected can connected and get a reply to waht is needed
-    #- so like the server can track what each client desires 
-    #- as well as each client needs to be registered on the server at handshake
-    #- so each client (IP + HOST) and maybe bufferSize is tracked
-    #- potentially dropped after request is finished   
+#- requesting files
 
 #! edge case requesting a file that doesnt exist
 
