@@ -35,8 +35,7 @@ def serverStart(hostAddress):
     #? array should keep track of each connections packet request 
 
     print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n")
-    
-    time.sleep(1)
+
     fileReadIn()
     print("server done")
     # -------------------------------------------------------
@@ -73,7 +72,8 @@ def initialHandshakeServer():
     #! --------------------------------------------------------------------------------------------
 
 def handler():
-    packet = packetBuilder( serverSocket.recvfrom(bufferSize))
+    packList = multiPacketHandle(serverSocket, bufferSize)
+    packet = packList[0]
     addToConnection(packet)
     if (packet.type == 1): #-request
         fileRequest()
@@ -122,5 +122,4 @@ def fileRequest():
 
 def printFilesList(packet: Packet):
     packetFiles = Packet(MessageType.GIV, 1, calcPacketSize(bufferSize - headerSize, txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port)
-    print(calcPacketSize(bufferSize - headerSize, txtfiles))
     multiSendPacket(packetFiles, serverSocket, bufferSize)

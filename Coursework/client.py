@@ -22,9 +22,9 @@ def clientStart(connectionAddress):
 
     clientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     
+
+    time.sleep(2)
     print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n")
-    
-    time.sleep(1)
     print("client done")
 
     initialHandshakeClient() 
@@ -35,7 +35,6 @@ def clientStart(connectionAddress):
         clientReq = genericRequestBuilder(clientInput)
         multiSendPacket (clientReq, clientSocket, bufferSize)
         response = multiPacketHandle(clientSocket, bufferSize)
-        print("hi")
         print(messageBuilder(response))
 
 def initialHandshakeClient():
@@ -57,7 +56,7 @@ def genericRequestBuilder(clientInput:str) ->Packet:
     if (clientInput == "givelist"):
         messType = MessageType.GIV
 
-    return Packet(messType, 1, headerSize, 0, 0, 0, bytes(), targetIP, targetPort)
+    return Packet(messType, 1, calcPacketSize(bufferSize - headerSize, headerSize), 0, 0, 0, bytes(), targetIP, targetPort)
 
 
 

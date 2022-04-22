@@ -4,3 +4,4 @@ class MessageType(Enum):
     REQ = 1 # requesting something
     RES = 2 # responce to request
     GIV = 3 # returns a list of files peer has  
+    
