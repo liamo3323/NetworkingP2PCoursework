@@ -26,6 +26,7 @@ class Packet:
     self.ip = ip
     self.port = port
     self.address = (ip, port)
+    self.checkSum = checkSumCalc(self.packet)
 
 def packetBuilder(inPacket: Tuple)-> Packet:
 
@@ -57,3 +58,10 @@ def objToPacket(packet:Packet) -> bytes:
     + packet.req.to_bytes(2, 'little'))
 	fullPacket = encodedHeader+packet.packetData
 	return fullPacket
+
+
+def checkSumCalc(data:bytes)->int:
+    x = 0
+    for byte in data:
+        x = (x + byte) & 0xFFFFFFFF
+    return (((x ^ 0xFFFFFFFF) +1) & 0xFFFFFFFF)

@@ -99,10 +99,13 @@ def fileReadIn():
     txtfiles = txtfiles + "\nWhich text file would you like to see?"
 
 def returnFileStr(fileInt: int) -> str:
-    reqFileName = files[fileInt-1]
-    fileLocation = "./resources/"+reqFileName
-    file = open(fileLocation, "r")
-    return file.read()
+    try:
+        reqFileName = files[fileInt-1]
+        fileLocation = "./resources/"+reqFileName
+        file = open(fileLocation, "r")
+        return file.read()
+    except:
+        return ("!!File does not exist!!")
 
 def fileRequest(packet: Packet):
     clientFile = returnFileStr(packet.req)

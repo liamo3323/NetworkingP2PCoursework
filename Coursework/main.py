@@ -8,12 +8,7 @@ import sys
 # python3 main.py 20000 20001
 
 # todo:
-#- requesting files
-
-#! edge case requesting a file that doesnt exist
-
-# ? FUTURE
-    # ? checksum
+#! checking if packet recieved is correct via checksum
 
 def specifyConnectionServer():
 
