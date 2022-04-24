@@ -3,6 +3,7 @@ import socket
 import time
 import re
 from typing import Tuple
+from xmlrpc.client import Boolean
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder
 from methods import calcPacketSize, multiSendPacket, multiPacketHandle, messageBuilder
@@ -22,7 +23,7 @@ def clientStart(connectionAddress):
     targetPort   = connectionAddress[1]
 
     clientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    
+    clientSocket.settimeout(5)    
 
     time.sleep(2)
     print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n")
@@ -30,8 +31,9 @@ def clientStart(connectionAddress):
 
     # -------------------------------------------------------
     while True:
-        multiSendPacket (genericRequestBuilder(input()), clientSocket, bufferSize)
-        print(messageBuilder(multiPacketHandle(clientSocket, bufferSize)))
+        clientRequest = genericRequestBuilder(input())
+        multiSendPacket (clientRequest, clientSocket, bufferSize)
+        print(messageBuilder(multiPacketHandle(clientSocket, bufferSize, clientRequest)))
 
 def genericRequestBuilder(clientInput:str) ->Packet:
     if (clientInput == "givelist"):
@@ -50,3 +52,9 @@ def listToInt(list:list)->int:
     for x in list:
         total = total + x
     return int(total)
+
+def verifyingPacketSource(target:Packet, recieved:Packet) -> Boolean:
+    if (target.address == recieved.address):
+        return True
+    else:
+        return False

@@ -73,8 +73,7 @@ def initialHandshakeServer():
     #! --------------------------------------------------------------------------------------------
 
 def handler():
-    packList = multiPacketHandle(serverSocket, bufferSize)
-    packet = packList[0]
+    packet = packetBuilder( serverSocket.recvfrom(bufferSize))
     addToConnection(packet)
     if (packet.type == 1): #-request
         fileRequest(packet)
@@ -98,6 +97,7 @@ def fileReadIn():
         ctr = ctr + 1
     txtfiles = txtfiles + "\nWhich text file would you like to see?"
 
+
 def returnFileStr(fileInt: int) -> str:
     try:
         reqFileName = files[fileInt-1]
@@ -106,6 +106,7 @@ def returnFileStr(fileInt: int) -> str:
         return file.read()
     except:
         return ("!!File does not exist!!")
+
 
 def fileRequest(packet: Packet):
     clientFile = returnFileStr(packet.req)
