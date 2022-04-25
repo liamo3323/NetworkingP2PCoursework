@@ -100,4 +100,5 @@ def buildPacketChecksum(packet:Packet)->bytes:
     + (0).to_bytes(4, 'little') 
     + packet.headCheckSum.to_bytes(4, 'little')
     + packet.req.to_bytes(2, 'little'))
+    
     return encodedHeader+packet.packetData

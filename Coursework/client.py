@@ -3,24 +3,27 @@ import socket
 import time
 import re
 from typing import Tuple
-from xmlrpc.client import Boolean
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder
 from methods import calcPacketSize, multiSendPacket, multiPacketHandle, messageBuilder
 from constants import hr_Size, bf_Size
-global bufferSize
-global headerSize
+
 bufferSize = bf_Size
 headerSize = hr_Size
+clientSocket:socket.socket
+targetIP:str
+targetPort:int
 
 def clientStart(connectionAddress): 
+    global bufferSize
+    global headerSize
     global clientSocket
     global targetIP
     global targetPort
 
     # * Address where client wants to connect to
-    targetIP     = connectionAddress[0]
-    targetPort   = connectionAddress[1]
+    targetIP = connectionAddress[0]
+    targetPort = connectionAddress[1]
 
     clientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     clientSocket.settimeout(5)    
@@ -44,6 +47,7 @@ def genericRequestBuilder(clientInput:str) ->Packet:
         return Packet(MessageType.REQ, 1, calcPacketSize(bufferSize - headerSize, headerSize), 0, 0, number, bytes(), targetIP, targetPort)
     else:
         print("!!!ERROR INVALID REQUEST!!!")
+        return Packet(MessageType.REQ, 0, 0, 0, 0, 0, bytes(), "", 0)
 
 def listToInt(list:list)->int:
     total:str = ""

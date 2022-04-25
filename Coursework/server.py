@@ -1,5 +1,7 @@
 from ast import Str
+from distutils.text_file import TextFile
 from http import server
+from io import BufferedWriter, TextIOWrapper
 from client import genericRequestBuilder
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder
@@ -7,21 +9,19 @@ from methods import calcPacketSize, multiPacketHandle, messageBuilder, multiSend
 from constants import bf_Size, hr_Size
 
 import socket
-import time
 import os
 
-global bufferSize
-global headerSize
 bufferSize = bf_Size
 headerSize = hr_Size
-
+serverSocket:socket.socket
+txtfiles:str
 
 def serverStart(hostAddress):
-
+    global bufferSize
+    global headerSize
     global serverSocket
-    global hostIP
-    global hostPort
-    global clientConnections
+    global txtfiles
+
 
     # * Socket Binding to host IP & Port 
     hostIP = hostAddress[0]
@@ -32,7 +32,7 @@ def serverStart(hostAddress):
 
     print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n")
 
-    fileReadIn()
+    txtfiles = fileReadIn()
     print("server done")
     # -------------------------------------------------------
 
@@ -56,9 +56,7 @@ def handler():
     else:
         print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")
     
-def fileReadIn():
-    global txtfiles
-    global files
+def fileReadIn()-> str:
     txtfiles = ""
     files = os.listdir('./resources') # <- this is now a list of files
     ctr = 1
@@ -66,21 +64,19 @@ def fileReadIn():
         txtfiles = str(ctr) + " - " + x + ", \n" + txtfiles
         ctr = ctr + 1
     txtfiles = txtfiles + "\nWhich text file would you like to see?"
+    return txtfiles
 
-
-def returnFileStr(fileInt: int) -> str:
+def fileRequest(packet: Packet):
+    files = os.listdir('./resources')
     try:
-        reqFileName = files[fileInt-1]
+        reqFileName = files[packet.req-1]
         fileLocation = "./resources/"+reqFileName
-        file = open(fileLocation, "r")
-        return file.read()
+        IOwrapperFile = open(fileLocation, "r")
+        file = IOwrapperFile.read()
     except:
         return ("!!File does not exist!!")
 
-
-def fileRequest(packet: Packet):
-    clientFile = returnFileStr(packet.req)
-    multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(bufferSize - headerSize, clientFile), 0, 0, packet.req, str(clientFile).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
+    multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(bufferSize - headerSize, file), 0, 0, packet.req, str(file).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
 
 
 def printFilesList(packet: Packet): 

@@ -8,11 +8,14 @@ import sys
 # python3 main.py 20000 20001
 
 # todo:
-
+# - check what checksum header includes
+# - clean up code a little but 
+# - add comments around the place
+# - check with RFC what else  is there to do? 
+# - ask about zeroth index  
 
 def specifyConnectionServer():
 
-    #sys arg[1] is server port hosting
     try:
         if (sys.argv[1] != ""):
             return ["127.0.0.1", int(sys.argv[1])]
