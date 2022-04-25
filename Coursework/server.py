@@ -30,11 +30,6 @@ def serverStart(hostAddress):
     serverSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     serverSocket.bind((hostIP, hostPort))
 
-    # Keeping track of each connected client
-    clientConnections = {}
-    # hashmaps- clientConnections[ packet.address ] = packet 
-    #? array should keep track of each connections packet request 
-
     print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n")
 
     fileReadIn()
@@ -53,22 +48,20 @@ def serverStart(hostAddress):
 
 def handler():
     packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-    addToConnection(packet)
+    print(packet.encodedHeader)
     if (packet.type == 1): #-request
         fileRequest(packet)
     elif (packet.type == 3):
         printFilesList(packet)
     else:
         print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")
-
-
     
 def fileReadIn():
     global txtfiles
     global files
     txtfiles = ""
     files = os.listdir('./resources') # <- this is now a list of files
-    ctr = 0
+    ctr = 1
     for x in files:
         txtfiles = str(ctr) + " - " + x + ", \n" + txtfiles
         ctr = ctr + 1
@@ -92,24 +85,4 @@ def fileRequest(packet: Packet):
 
 def printFilesList(packet: Packet): 
     multiSendPacket(Packet(MessageType.GIV, 1, calcPacketSize(bufferSize - headerSize, txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
-
-
-
-def addToConnection(packet: Packet):
-    #! FOR THE FUTURE
-    global clientConnections
-
-    if checkForExistance(packet) is False:
-        clientConnections[ packet.address ] = packet
-    else:
-        print("!!PACKET EXISTS!!")
-
-
-def checkForExistance(packet: Packet) -> bool:
-    #checks if incoming packet exists in already established connections
-
-    for x in clientConnections:
-        if (x == packet.address):
-            return True
-    return False
 

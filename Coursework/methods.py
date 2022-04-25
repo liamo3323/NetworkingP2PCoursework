@@ -33,7 +33,6 @@ def multiPacketHandle( socket: socket.socket, bufferSize: int, packetResend:Pack
             recievedPacket:Packet = packetBuilder(incomingPacket)
             if (checkChecksum(recievedPacket)): #! <- this is a tuple
                 
-                
                 if (incomingPacket[1] == packetResend.address):
                     if (len(packetList) == 0):
                         packetList.append(recievedPacket)
@@ -83,7 +82,11 @@ def calcChecksum(data:bytes)->int:
 
 def checkChecksum(packet:Packet)->bool:
     givenChecksum = packet.checkSum
+
     calculatedChecksum = calcChecksum(buildPacketChecksum(packet))
+
+    print("given", givenChecksum)
+    print("calculated", calculatedChecksum)
 
     if (givenChecksum == calculatedChecksum):
         return True

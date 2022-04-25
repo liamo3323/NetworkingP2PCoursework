@@ -37,8 +37,7 @@ def clientStart(connectionAddress):
 
 def genericRequestBuilder(clientInput:str) ->Packet:
     if (clientInput == "givelist"):
-        messType = MessageType.GIV
-        return Packet(messType, 1, calcPacketSize(bufferSize - headerSize, headerSize), 0, 0, 0, bytes(), targetIP, targetPort)
+        return Packet(MessageType.GIV, 1, calcPacketSize(bufferSize - headerSize, headerSize), 0, 0, 0, bytes(), targetIP, targetPort)
     elif (re.search("^req", clientInput)):
         print("Success")
         number = listToInt(re.findall("\d", clientInput))
