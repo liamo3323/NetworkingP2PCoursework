@@ -46,15 +46,8 @@ def genericRequestBuilder(clientInput:str) ->Packet:
     else:
         print("!!!ERROR INVALID REQUEST!!!")
 
-
 def listToInt(list:list)->int:
     total:str = ""
     for x in list:
         total = total + x
     return int(total)
-
-def verifyingPacketSource(target:Packet, recieved:Packet) -> Boolean:
-    if (target.address == recieved.address):
-        return True
-    else:
-        return False

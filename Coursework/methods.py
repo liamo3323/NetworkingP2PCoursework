@@ -1,6 +1,6 @@
 from ipaddress import ip_address
 from logging import exception
-from packet_class import Packet, packetBuilder, objToPacket, checkChecksum
+from packet_class import Packet, packetBuilder, objToPacket
 from headerEnums import MessageType
 import socket
 import math
@@ -28,18 +28,23 @@ def multiPacketHandle( socket: socket.socket, bufferSize: int, packetResend:Pack
     while True:
         try:
             incomingPacket = socket.recvfrom(bufferSize)
-            recievedPacket:Packet = packetBuilder(incomingPacket)
+            #! check checksum
             
-            if (incomingPacket[1] == packetResend.address):
-                if (len(packetList) == 0):
-                    packetList.append(recievedPacket)
-
-                elif ( recievedPacket.currentPacket == ((packetList[len(packetList)-1].currentPacket)+1) ):
-                    packetList.append(recievedPacket)
+            recievedPacket:Packet = packetBuilder(incomingPacket)
+            if (checkChecksum(recievedPacket)): #! <- this is a tuple
                 
-                if (packetList[len(packetList)-1].currentPacket == packetList[len(packetList)-1].packetTot):
-                    break
-        except:
+                
+                if (incomingPacket[1] == packetResend.address):
+                    if (len(packetList) == 0):
+                        packetList.append(recievedPacket)
+
+                    elif ( recievedPacket.currentPacket == ((packetList[len(packetList)-1].currentPacket)+1) ):
+                        packetList.append(recievedPacket)
+                    
+                    if (packetList[len(packetList)-1].currentPacket == packetList[len(packetList)-1].packetTot):
+                        break
+        except Exception as e:
+            print(e)
             multiSendPacket(packetResend, socket, bufferSize)
 
 
@@ -65,14 +70,31 @@ def multiSendPacket(packet: Packet, socket: socket.socket, bufferSize: int):
         ctr = ctr +  1
         
     for x in packetList:
+        x.checkSum = calcChecksum(buildPacketChecksum(x))
         socket.sendto(objToPacket(x), x.address)
-    # ctr = 0
-    # while True: #! testing 
-        # socket.sendto(objToPacket(packetList[ctr]), packetList[ctr].address)
-        # akg = packetBuilder( socket.recvfrom(bufferSize))
-        # print(akg.currentPacket)
-        # if (akg.currentPacket == akg.packetTot):
-        #     break
-        # ctr = ctr + 1
 
 
+def calcChecksum(data:bytes)->int:
+    x = 0
+    for byte in data:
+        x = (x + byte) & 0xFFFFFFFF
+    return (((x ^ 0xFFFFFFFF) +1) & 0xFFFFFFFF)
+    
+
+def checkChecksum(packet:Packet)->bool:
+    givenChecksum = packet.checkSum
+    calculatedChecksum = calcChecksum(buildPacketChecksum(packet))
+
+    if (givenChecksum == calculatedChecksum):
+        return True
+    else:
+        return False
+
+def buildPacketChecksum(packet:Packet)->bytes:
+    encodedHeader = (packet.type.to_bytes(1, 'little') 
+    + packet.currentPacket.to_bytes(4, 'little') 
+    + packet.packetTot.to_bytes(4, 'little') 
+    + (0).to_bytes(4, 'little') 
+    + packet.headCheckSum.to_bytes(4, 'little')
+    + packet.req.to_bytes(2, 'little'))
+    return encodedHeader+packet.packetData

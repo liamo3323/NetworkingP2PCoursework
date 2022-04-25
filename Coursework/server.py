@@ -51,34 +51,11 @@ def serverStart(hostAddress):
 
         handler()
 
-def initialHandshakeServer(): 
-    #* Server will realize that client is sending a handshake packet
-    #* and calculate lowest buffer size between client + server and 
-    #* reply the smallest buffer between the two
-    
-    print()
-    #! -------------------------------buffer exchange has been removed---------------------------    
-    #packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-    # packet = multiPacketHandle(serverSocket, bufferSize)
-
-    # recievedValue = int(messageBuilder(packet))
-
-    # if (recievedValue < bufferSize):
-    #     print("| Agreeing on smaller buffer size |")
-    #     bufferSize = recievedValue  
- 
-    # replyPacket:Packet = packet[0]
-    # replyBufferVal = Packet(MessageType.HND, replyPacket.currentPacket, calcPacketSize(bufferSize - headerSize, bufferSize) , replyPacket.checkSum, replyPacket.headCheckSum, replyPacket.req, str(bufferSize).encode('utf-8'), replyPacket.ip, replyPacket.port)
-    # multiSendPacket(replyBufferVal, serverSocket, bufferSize)
-    #! --------------------------------------------------------------------------------------------
-
 def handler():
     packet = packetBuilder( serverSocket.recvfrom(bufferSize))
     addToConnection(packet)
     if (packet.type == 1): #-request
         fileRequest(packet)
-    elif (packet.type == 2): #-response
-        print()
     elif (packet.type == 3):
         printFilesList(packet)
     else:
@@ -113,7 +90,7 @@ def fileRequest(packet: Packet):
     multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(bufferSize - headerSize, clientFile), 0, 0, packet.req, str(clientFile).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
 
 
-def printFilesList(packet: Packet):
+def printFilesList(packet: Packet): 
     multiSendPacket(Packet(MessageType.GIV, 1, calcPacketSize(bufferSize - headerSize, txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
 
 

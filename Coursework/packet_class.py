@@ -58,29 +58,3 @@ def objToPacket(packet:Packet) -> bytes:
     + packet.req.to_bytes(2, 'little'))
 	fullPacket = encodedHeader+packet.packetData
 	return fullPacket
-
-
-def calcChecksum(data:bytes)->int:
-    x = 0
-    for byte in data:
-        x = (x + byte) & 0xFFFFFFFF
-    return (((x ^ 0xFFFFFFFF) +1) & 0xFFFFFFFF)
-    
-
-def checkChecksum(packet:Packet)->bool:
-    givenChecksum = packet.checkSum
-    calculatedChecksum = calcChecksum(buildPacketChecksum(packet))
-
-    if (givenChecksum == calculatedChecksum):
-        return True
-    else:
-        return False
-
-def buildPacketChecksum(packet:Packet)->bytes:
-    encodedHeader = (packet.type.to_bytes(1, 'little') 
-    + packet.currentPacket.to_bytes(4, 'little') 
-    + packet.packetTot.to_bytes(4, 'little') 
-    + (0).to_bytes(4, 'little') 
-    + packet.headCheckSum.to_bytes(4, 'little')
-    + packet.req.to_bytes(2, 'little'))
-    return encodedHeader+packet.packetData
