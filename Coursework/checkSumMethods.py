@@ -19,13 +19,9 @@ def checkChecksum(packet:Packet)->bool:
     print ("calcualtd bytes - ", buildPacketChecksum(packet))
 
     print("\n\ngiven     ", givenChecksum)
-    print("calculated", calculatedChecksum)
+    print(    "calculated", calculatedChecksum)
 
-    if (givenChecksum == calculatedChecksum):
-        return True
-    else:
-        return False
-
+    return (givenChecksum == calculatedChecksum)
 
 def calcChecksum(data:bytes)->int:
     print ("calcchecksum input bytes - ")

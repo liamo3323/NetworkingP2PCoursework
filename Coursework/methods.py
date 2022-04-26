@@ -41,7 +41,7 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
             #! check checksum
             recievedPacket:Packet = packetBuilder(incomingPacket)
             if (checkChecksum(recievedPacket)): #! <- this is a tuple
-                
+
                 if (incomingPacket[1] == packetResend.address):
                     if (len(packetList) == 0):
                         packetList.append(recievedPacket)
@@ -51,6 +51,11 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
                     
                     if (packetList[len(packetList)-1].sliceIndex == packetList[len(packetList)-1].lastSliceIndex):
                         break
+                    else:
+                        responsePacket:Packet = copy.copy(recievedPacket)
+                        responsePacket.sliceIndex += 1
+                        responsePacket.checkSum = calcChecksum(buildPacketChecksum(responsePacket))
+                        socket.sendto(objToPacket(responsePacket), responsePacket.address)
 
         except Exception as e:
             print(e)

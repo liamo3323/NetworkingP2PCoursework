@@ -4,6 +4,7 @@ from threading import Thread
 import sys
 
 # todo list:
+# - make a congif file! 
 # - check what checksum header includes
 # - clean up code a little but 
 # - add comments around the place
@@ -21,6 +22,9 @@ def specifyConnectionServer(): #function to ask for user input on PEER hosting I
 
     # lh1 and lh0 are 2 different local host values for testing purposes
     # ports 'a' and 'b' are also for testing purposes
+    if (ip ==  "ollie"):
+        return ["0.0.0.0", 6969]
+
     if (ip == "lh1"):
         ip = "127.0.0.1"
     
@@ -46,6 +50,10 @@ def specifyConnectionClient(): #function to ask for user input on IP and PORT PE
 
     # lh1 and lh0 are 2 different local host values for testing purposes
     # ports 'a' and 'b' are also for testing purposes
+
+    if (ip ==  "ollie"):
+        return ["10.77.38.136", 10000]
+
     if (ip == "lh1"):
         ip = "127.0.0.1"
     
