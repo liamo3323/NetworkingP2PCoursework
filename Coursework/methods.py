@@ -50,6 +50,7 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
                         packetList.append(recievedPacket)
                     
                     if (packetList[len(packetList)-1].sliceIndex == packetList[len(packetList)-1].lastSliceIndex):
+                        print ("packet list slice index", packetList[len(packetList)-1].sliceIndex, " packet list slice max ", packetList[len(packetList)-1].lastSliceIndex)
                         break
                     else:
                         responsePacket:Packet = copy.copy(recievedPacket)
@@ -65,6 +66,7 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
             else:
                 multiSendPacket(packetResend, socket)
 
+    print (packetList)
     return(packetList)
 
 def multiSendPacket(packet: Packet, socket: socket.socket):
