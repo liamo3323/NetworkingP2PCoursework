@@ -5,8 +5,11 @@ from headerEnums import MessageType
 from constants import hr_Size
 
 class Packet:
-  def __init__(self, type: MessageType, packetSliceIndex:int, packetLastSliceIndex:int, packetCheck:int, pacBodyLength:int, packetFileIndex:int, packetData:bytes, ip: str, port: int):
-    
+  #def __init__(self, type: MessageType, packetSliceIndex:int, packetLastSliceIndex:int, packetCheck:int, pacBodyLength:int, packetFileIndex:int, packetData:bytes, ip: str, port: int):
+  def __init__(self, type: MessageType, packetLastSliceIndex:int, packetData:bytes, ip: str, port: int, packetFileIndex:int = 0, packetSliceIndex:int = 1, packetCheck:int = 0, pacBodyLength:int =0):
+  
+  # ! list of variables that should have default values: packetSliceIndex, packetCheck pacBodyLength, PacketFileIndex,
+
     #* Checksum - The calculation to check message integrity using longitudinal redundancy check. MUST be included.
     #* Message Type - Each communication MUST include one of the type options
     #* Slice index - is used to declare for the client which slice it wants to retrieve.
@@ -56,8 +59,7 @@ def packetBuilder(inPacket: Tuple)-> Packet:
 
     packetIP        = pAddress[0]
     packetPort      = pAddress[1]
-    return(Packet( MessageType(pacType), pacSliceIdx, pacFinSliceIdx, pacCheck, pacBodyLength, pacFileIdx,  packetData,   packetIP, packetPort  ) )
-
+    return(Packet( MessageType(pacType), pacFinSliceIdx,   packetData,   packetIP, packetPort, packetSliceIndex=pacSliceIdx, packetCheck=pacCheck, pacBodyLength = pacBodyLength, packetFileIndex = pacFileIdx,) )
 def objToPacket(packet:Packet) -> bytes:
     encodedHeader = (packet.checkSum.to_bytes(4, 'little')
     + packet.type.to_bytes(1, 'little')

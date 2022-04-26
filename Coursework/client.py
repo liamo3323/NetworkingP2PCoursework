@@ -22,8 +22,7 @@ def clientStart(connectionAddress):
     # making variables global variables to be called inside other functions
     global bufferSize
     global headerSize
-    global bufferSize
-    global headerSize
+
     global clientSocket
     global targetIP
     global targetPort
@@ -47,14 +46,15 @@ def clientStart(connectionAddress):
 
 def genericRequestBuilder(clientInput:str) ->Packet:
     if (clientInput == "givelist"):
-        return Packet(MessageType.REQ, 1, calcPacketSize(headerSize), 0, 0, 0, bytes(), targetIP, targetPort)
+        return Packet(MessageType.REQ, calcPacketSize(headerSize), bytes(), targetIP, targetPort)
     elif (re.search("^req", clientInput)):
-        print("Success")
         number = listToInt(re.findall("\d", clientInput))
-        return Packet(MessageType.REQ, 1, calcPacketSize(headerSize), 0, 0, number, bytes(), targetIP, targetPort)
+        fileRequestPac = Packet(MessageType.REQ, calcPacketSize(headerSize), bytes(), targetIP, targetPort, number)
+        fileRequestPac.fileIndex = number
+        return (fileRequestPac)
     else:
         print("!!!ERROR INVALID REQUEST!!!")
-        return Packet(MessageType.REQ, 0, 0, 0, 0, 0, bytes(), "", 0)
+        return Packet(MessageType.REQ, 0, bytes(), "", 0)
 
 def listToInt(list:list)->int:
     total:str = ""

@@ -6,7 +6,7 @@ from headerEnums import MessageType
 from constants import hr_Size, bf_Size
 import socket
 import math
-import time
+import copy
 
 global headerSize
 global bufferSize
@@ -32,13 +32,13 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
     #* Multi packet handler, if there is only 1 packet return packet
     
     #! build up the full message
-
     packetList:list[Packet] = []
     while True:
+        timeoutCtr = 0
         try:
             incomingPacket = socket.recvfrom(bufferSize)
+
             #! check checksum
-            
             recievedPacket:Packet = packetBuilder(incomingPacket)
             if (checkChecksum(recievedPacket)): #! <- this is a tuple
                 
@@ -51,12 +51,15 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
                     
                     if (packetList[len(packetList)-1].sliceIndex == packetList[len(packetList)-1].lastSliceIndex):
                         break
+
         except Exception as e:
             print(e)
-            multiSendPacket(packetResend, socket)
+            timeoutCtr += 1
+            if (timeoutCtr > 10 ):
+                print("!!REQUEST TIMEOUT AFTER 10 TRIES!!")
+            else:
+                multiSendPacket(packetResend, socket)
 
-
-    
     return(packetList)
 
 def multiSendPacket(packet: Packet, socket: socket.socket):
@@ -72,7 +75,9 @@ def multiSendPacket(packet: Packet, socket: socket.socket):
         if ( end > len(packet.packetData)):
             end = end-(end-len(packet.packetData))
         splitMsg = packet.packetData[start:end]
-        packetToSend = Packet( MessageType(packet.type), packet.sliceIndex, packet.lastSliceIndex, packet.checkSum, packet.bodyLength, packet.fileIndex, splitMsg, packet.ip, packet.port)
+        
+        packetToSend = copy.copy(packet)
+        packetToSend.packetData = splitMsg
         packetToSend.sliceIndex = ctr
         packetList.append(packetToSend) 
         ctr = ctr +  1

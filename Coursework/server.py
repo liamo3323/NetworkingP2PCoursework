@@ -68,11 +68,12 @@ def fileRequest(packet: Packet):
         fileLocation = "./resources/"+reqFileName
         IOwrapperFile = open(fileLocation, "r")
         file = IOwrapperFile.read()
+        multiSendPacket(Packet(MessageType.RES, calcPacketSize(file), str(file).encode('utf-8'), packet.ip, packet.port, packetFileIndex = packet.fileIndex-1,), serverSocket)
+
     except:
         return ("!!File does not exist!!")
 
-    multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(file), 0, 0, packet.fileIndex-1, str(file).encode('utf-8'), packet.ip, packet.port), serverSocket)
 
 def printFilesList(packet: Packet): 
-    multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket)
+    multiSendPacket(Packet(MessageType.RES, calcPacketSize(txtfiles), str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket)
 
