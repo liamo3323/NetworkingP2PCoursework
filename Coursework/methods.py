@@ -1,10 +1,18 @@
 from ipaddress import ip_address
 from logging import exception
 from packet_class import Packet, packetBuilder, objToPacket
+from checkSumMethods import checkChecksum, calcChecksum, buildPacketChecksum
 from headerEnums import MessageType
+from constants import hr_Size, bf_Size
 import socket
 import math
 import time
+
+global headerSize
+global bufferSize
+
+headerSize = hr_Size
+bufferSize = bf_Size
 
 def messageBuilder(listPacket:list[Packet])-> str:
     data = ""
@@ -14,12 +22,13 @@ def messageBuilder(listPacket:list[Packet])-> str:
     return data
 
 
-def calcPacketSize(dataSize: int, data) -> int:
+def calcPacketSize (data) -> int:
+    dataSize = bf_Size - hr_Size
     byteLength = len(str(data).encode('utf-8')) 
     return int(math.ceil(byteLength/dataSize))
 
 
-def multiPacketHandle( socket: socket.socket, bufferSize: int, packetResend:Packet)-> list:
+def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
     #* Multi packet handler, if there is only 1 packet return packet
     
     #! build up the full message
@@ -37,68 +46,37 @@ def multiPacketHandle( socket: socket.socket, bufferSize: int, packetResend:Pack
                     if (len(packetList) == 0):
                         packetList.append(recievedPacket)
 
-                    elif ( recievedPacket.currentPacket == ((packetList[len(packetList)-1].currentPacket)+1) ):
+                    elif ( recievedPacket.sliceIndex == ((packetList[len(packetList)-1].sliceIndex)+1) ):
                         packetList.append(recievedPacket)
                     
-                    if (packetList[len(packetList)-1].currentPacket == packetList[len(packetList)-1].packetTot):
+                    if (packetList[len(packetList)-1].sliceIndex == packetList[len(packetList)-1].lastSliceIndex):
                         break
         except Exception as e:
             print(e)
-            multiSendPacket(packetResend, socket, bufferSize)
+            multiSendPacket(packetResend, socket)
 
 
     
     return(packetList)
 
-def multiSendPacket(packet: Packet, socket: socket.socket, bufferSize: int):
+def multiSendPacket(packet: Packet, socket: socket.socket):
     
     #* break down the message into smaller packets then send them in groups
 
     ctr = 1
     packetList:list[Packet] = [] # store packets here to be sent and can be reqeusted again
     dataSize = bufferSize - 19
-    for x in range (packet.packetTot):
+    for x in range (packet.lastSliceIndex):
         start = x   * dataSize
         end   = (x+1)*dataSize
         if ( end > len(packet.packetData)):
             end = end-(end-len(packet.packetData))
         splitMsg = packet.packetData[start:end]
-        packetToSend = Packet( MessageType(packet.type), packet.currentPacket, packet.packetTot, packet.checkSum, packet.headCheckSum, packet.req, splitMsg, packet.ip, packet.port)
-        packetToSend.currentPacket = ctr
+        packetToSend = Packet( MessageType(packet.type), packet.sliceIndex, packet.lastSliceIndex, packet.checkSum, packet.bodyLength, packet.fileIndex, splitMsg, packet.ip, packet.port)
+        packetToSend.sliceIndex = ctr
         packetList.append(packetToSend) 
         ctr = ctr +  1
         
     for x in packetList:
         x.checkSum = calcChecksum(buildPacketChecksum(x))
         socket.sendto(objToPacket(x), x.address)
-
-
-def calcChecksum(data:bytes)->int:
-    x = 0
-    for byte in data:
-        x = (x + byte) & 0xFFFFFFFF
-    return (((x ^ 0xFFFFFFFF) +1) & 0xFFFFFFFF)
-    
-
-def checkChecksum(packet:Packet)->bool:
-    givenChecksum = packet.checkSum
-
-    calculatedChecksum = calcChecksum(buildPacketChecksum(packet))
-
-    print("given", givenChecksum)
-    print("calculated", calculatedChecksum)
-
-    if (givenChecksum == calculatedChecksum):
-        return True
-    else:
-        return False
-
-def buildPacketChecksum(packet:Packet)->bytes:
-    encodedHeader = (packet.type.to_bytes(1, 'little') 
-    + packet.currentPacket.to_bytes(4, 'little') 
-    + packet.packetTot.to_bytes(4, 'little') 
-    + (0).to_bytes(4, 'little') 
-    + packet.headCheckSum.to_bytes(4, 'little')
-    + packet.req.to_bytes(2, 'little'))
-    
-    return encodedHeader+packet.packetData

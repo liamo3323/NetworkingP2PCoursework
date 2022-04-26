@@ -3,19 +3,14 @@ from client import clientStart
 from threading import Thread
 import sys
 
-# COPY PASTE
-# python3 main.py 20001 20000
-# python3 main.py 20000 20001
-
-# todo:
+# todo list:
 # - check what checksum header includes
 # - clean up code a little but 
 # - add comments around the place
 # - check with RFC what else  is there to do? 
 # - ask about zeroth index  
 
-def specifyConnectionServer():
-
+def specifyConnectionServer(): #function to ask for user input on PEER hosting IP and PORT
     try:
         if (sys.argv[1] != ""):
             return ["127.0.0.1", int(sys.argv[1])]
@@ -24,6 +19,8 @@ def specifyConnectionServer():
     ip = input("Server: What ip would you like to host on?: ")
     port = input("Server: What port would you like to host on?: ")
 
+    # lh1 and lh0 are 2 different local host values for testing purposes
+    # ports 'a' and 'b' are also for testing purposes
     if (ip == "lh1"):
         ip = "127.0.0.1"
     
@@ -38,9 +35,7 @@ def specifyConnectionServer():
 
     return [ip, int(port)]
 
-def specifyConnectionClient():
-
-    #sys arg[2] is client port connection
+def specifyConnectionClient(): #function to ask for user input on IP and PORT PEER will connect to
     try: 
         if (sys.argv[2] != ""):
             return ["127.0.0.1", int(sys.argv[2])]
@@ -49,6 +44,8 @@ def specifyConnectionClient():
     ip = input("Client: What ip would you like to connect to?: ")
     port = input("Client: What port would you like to connect to?: ")
 
+    # lh1 and lh0 are 2 different local host values for testing purposes
+    # ports 'a' and 'b' are also for testing purposes
     if (ip == "lh1"):
         ip = "127.0.0.1"
     
@@ -61,12 +58,13 @@ def specifyConnectionClient():
     elif (port == "b"):
         port = "2001"
 
-         
     return [ip, int(port)]
 
+# host location and connecting address are always asked before creating threads 
 connectionAddress = specifyConnectionClient()
 hostAddress = specifyConnectionServer()
 
+# threading to run a client instance and server instance for PEER to PEER to work
 if __name__ == '__main__':
     Thread(target = serverStart, args=(hostAddress,)).start()
     Thread(target = clientStart, args=(connectionAddress,)).start()

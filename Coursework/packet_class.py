@@ -5,22 +5,31 @@ from headerEnums import MessageType
 from constants import hr_Size
 
 class Packet:
-  def __init__(self, type: MessageType, packetCur:int, packetTot:int, packetCheck:int, packetHeadCheck:int, packetReq:int, packetData:bytes, ip: str, port: int):
+  def __init__(self, type: MessageType, packetSliceIndex:int, packetLastSliceIndex:int, packetCheck:int, pacBodyLength:int, packetFileIndex:int, packetData:bytes, ip: str, port: int):
     
-    #* [ packet1 = packet(...) ] <-- creating a packet object \
+    #* Checksum - The calculation to check message integrity using longitudinal redundancy check. MUST be included.
+    #* Message Type - Each communication MUST include one of the type options
+    #* Slice index - is used to declare for the client which slice it wants to retrieve.
+    #* Last slice index - The last slice index for a given file index
+    #* File Index - index of the resource the client tries to obtain.
+    #* Body length - size of the slice <-- [this can be done later!] 
+    #* Body - contains the slice
+
     self.checkSum = packetCheck
     self.type = type.value
-    self.currentPacket = packetCur
-    self.packetTot = packetTot
-    self.headCheckSum = packetHeadCheck
-    self.req = packetReq
+    self.sliceIndex = packetSliceIndex
+    self.lastSliceIndex = packetLastSliceIndex
+    self.fileIndex = packetFileIndex
+    self.bodyLength = pacBodyLength
+
+    # ? ORDER OF HEADER: checksum > message type > slice index > last slice index > file index > body  length > Body...
 
     self.encodedHeader = (self.checkSum.to_bytes(4, 'little')
-    + self.currentPacket.to_bytes(4, 'little') 
-    + self.packetTot.to_bytes(4, 'little') 
     + self.type.to_bytes(1, 'little')
-    + self.headCheckSum.to_bytes(4, 'little')
-    + self.req.to_bytes(2, 'little'))
+    + self.sliceIndex.to_bytes(4, 'little') 
+    + self.lastSliceIndex.to_bytes(4, 'little') 
+    + self.fileIndex.to_bytes(4, 'little')
+    + self.bodyLength.to_bytes(2, 'little'))
 
     self.packetData = packetData
     self.packet = self.encodedHeader + self.packetData
@@ -30,31 +39,32 @@ class Packet:
 
 def packetBuilder(inPacket: Tuple)-> Packet:
 
-    #- Header Format = Type | Cur Pack | Tot Pack | Check Sum | Extra 
+    # ? ORDER OF HEADER: checksum > message type > slice index > last slice index > file index > body  length > Body...
 
-    pData = inPacket[0]
-    pAddress = inPacket[1]
+    pData           = inPacket[0]
+    pAddress        = inPacket[1]
 
-    packetHeader = pData[:hr_Size]
-    packetData = pData[hr_Size:]
+    packetHeader    = pData[:hr_Size]
+    packetData      = pData[hr_Size:]
 
-    pacCheck = int.from_bytes(packetHeader[0:4], 'little')
-    pacCur = int.from_bytes(packetHeader[4:8], 'little')
-    pacTot = int.from_bytes(packetHeader[8:12], 'little')
-    pacType = packetHeader[12]  
-    pacHeadCheck = int.from_bytes(packetHeader[13:17], 'little')
-    pacReq = int.from_bytes(packetHeader[17:19], 'little')
-    print(pacType)
-    packetIP = pAddress[0]
-    packetPort = pAddress[1]
-    return(Packet(  MessageType(pacType), pacCur, pacTot, pacCheck, pacHeadCheck, pacReq,  packetData,   packetIP, packetPort  ) )
+    pacCheck        = int.from_bytes(packetHeader[0:4], 'little')
+    pacType         = packetHeader[4] 
+    pacSliceIdx     = int.from_bytes(packetHeader[5:9], 'little')
+    pacFinSliceIdx  = int.from_bytes(packetHeader[9:13], 'little')
+    pacFileIdx      = int.from_bytes(packetHeader[13:17], 'little')
+    pacBodyLength   = int.from_bytes(packetHeader[17:19], 'little')
+
+    packetIP        = pAddress[0]
+    packetPort      = pAddress[1]
+    return(Packet( MessageType(pacType), pacSliceIdx, pacFinSliceIdx, pacCheck, pacBodyLength, pacFileIdx,  packetData,   packetIP, packetPort  ) )
 
 def objToPacket(packet:Packet) -> bytes:
     encodedHeader = (packet.checkSum.to_bytes(4, 'little')
-            + packet.currentPacket.to_bytes(4, 'little') 
-            + packet.packetTot.to_bytes(4, 'little') 
-            + packet.type.to_bytes(1, 'little')
-            + packet.headCheckSum.to_bytes(4, 'little')
-            + packet.req.to_bytes(2, 'little'))
+    + packet.type.to_bytes(1, 'little')
+    + packet.sliceIndex.to_bytes(4, 'little') 
+    + packet.lastSliceIndex.to_bytes(4, 'little') 
+    + packet.fileIndex.to_bytes(4, 'little')
+    + packet.bodyLength.to_bytes(2, 'little'))
+
     fullPacket = encodedHeader+packet.packetData
     return fullPacket

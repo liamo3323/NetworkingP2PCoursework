@@ -37,22 +37,17 @@ def serverStart(hostAddress):
     # -------------------------------------------------------
 
     while True:
-        #? instead of waiting for an initialHandshake at the start a method that handles requests should be written
-        #initialHandshakeServer()
-
-        #? check if this is possible so client is able to see list of files on connection???
-        # packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-        # printFilesList(packet)
-
-        handler()
+        # ? Handler will always be listening for client requests and responding appropriately
+        handler() 
 
 def handler():
-    packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-    print(packet.encodedHeader)
+    packet:Packet = packetBuilder( serverSocket.recvfrom(bufferSize))
+    print(packet.packet)
     if (packet.type == 1): #-request
-        fileRequest(packet)
-    elif (packet.type == 3):
-        printFilesList(packet)
+        if (packet.fileIndex == 0):
+            printFilesList(packet)
+        elif (packet.fileIndex > 0):
+            fileRequest(packet)
     else:
         print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")
     
@@ -69,16 +64,15 @@ def fileReadIn()-> str:
 def fileRequest(packet: Packet):
     files = os.listdir('./resources')
     try:
-        reqFileName = files[packet.req-1]
+        reqFileName = files[packet.fileIndex-1]
         fileLocation = "./resources/"+reqFileName
         IOwrapperFile = open(fileLocation, "r")
         file = IOwrapperFile.read()
     except:
         return ("!!File does not exist!!")
 
-    multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(bufferSize - headerSize, file), 0, 0, packet.req, str(file).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
-
+    multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(file), 0, 0, packet.fileIndex-1, str(file).encode('utf-8'), packet.ip, packet.port), serverSocket)
 
 def printFilesList(packet: Packet): 
-    multiSendPacket(Packet(MessageType.GIV, 1, calcPacketSize(bufferSize - headerSize, txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket, bufferSize)
+    multiSendPacket(Packet(MessageType.RES, 1, calcPacketSize(txtfiles), 0, 0, 0, str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket)
 
