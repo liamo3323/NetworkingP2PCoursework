@@ -6,7 +6,7 @@ from client import genericRequestBuilder
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder, objToPacket
 from methods import calcPacketSize, multiPacketHandle, messageBuilder, multiSendPacket
-from checkSumMethods import calcChecksum, buildPacketChecksum
+from checkSumMethods import calcChecksum, buildPacketChecksum, checkChecksum
 from constants import bf_Size, hr_Size
 
 import socket
@@ -43,21 +43,28 @@ def serverStart(hostAddress):
 
 def handler():
     packet:Packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-    print(packet.packet)
-    if (packet.type == 1): #-request
-        if (packet.fileIndex == 0):
-            printFilesList(packet)
-        elif (packet.fileIndex > 0):
-            fileRequest(packet)
-    else:
-        print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")
-    
+
+    #! checking if checksum is right
+    if (checkChecksum(packet)):
+
+        print(packet.packet)
+        if (packet.type == 1): #-request
+            if (packet.fileIndex == 0):
+                printFilesList(packet)
+            elif (packet.fileIndex > 0):
+                fileRequest(packet)
+        else:
+            print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")
+        
 def fileReadIn()-> str:
     txtfiles = ""
     files = os.listdir('./resources') # <- this is now a list of files
     ctr = 1
     for x in files:
-        txtfiles = str(ctr) + " - " + x + ", \n" + txtfiles
+        fileLocation = "./resources/"+x
+        IOwrapperFile = open(fileLocation, "r")
+        file = IOwrapperFile.read()
+        txtfiles = str(ctr) + ":"+str(len(file))+":"+x + "\n"+txtfiles
         ctr = ctr + 1
     txtfiles = txtfiles + "\nWhich text file would you like to see?"
     return txtfiles
@@ -97,6 +104,7 @@ def fileRequest(packet: Packet):
     requestedSlice.sliceIndex = packet.sliceIndex
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
+
 
 def printFilesList(packet: Packet): 
     multiSendPacket(Packet(MessageType.RES, calcPacketSize(txtfiles), str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket)

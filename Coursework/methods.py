@@ -1,6 +1,6 @@
 from ipaddress import ip_address
 from logging import exception
-from packet_class import Packet, packetBuilder, objToPacket
+from packet_class import Packet, packetBuilder, objToPacket, checkSumSetter
 from checkSumMethods import checkChecksum, calcChecksum, buildPacketChecksum
 from headerEnums import MessageType
 from constants import hr_Size, bf_Size
@@ -40,6 +40,7 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
 
             #! check checksum
             recievedPacket:Packet = packetBuilder(incomingPacket)
+
             if (checkChecksum(recievedPacket)): #! <- this is a tuple
 
                 if (incomingPacket[1] == packetResend.address):
@@ -90,5 +91,13 @@ def multiSendPacket(packet: Packet, socket: socket.socket):
         ctr = ctr +  1
         
     for x in packetList:
+        print("build packet checksum", buildPacketChecksum(x))
+        print ("calcu checksum w/ build", calcChecksum(buildPacketChecksum(x)))
         x.checkSum = calcChecksum(buildPacketChecksum(x))
         socket.sendto(objToPacket(x), x.address)
+
+        # print("\nbuild packet checksum", buildPacketChecksum(x))
+        # print ("\ncalcu checksum w/ build", calcChecksum(buildPacketChecksum(x)))
+
+        # x.checkSumSetter(calcChecksum(buildPacketChecksum(x)))
+        # socket.sendto(objToPacket(x), x.address)

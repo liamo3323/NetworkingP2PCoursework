@@ -4,6 +4,7 @@ from threading import Thread
 import sys
 
 # todo list:
+# - format list
 # - make a congif file! 
 # - check what checksum header includes
 # - clean up code a little but 

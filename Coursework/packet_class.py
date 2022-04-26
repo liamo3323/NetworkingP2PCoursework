@@ -70,3 +70,6 @@ def objToPacket(packet:Packet) -> bytes:
 
     fullPacket = encodedHeader+packet.packetData
     return fullPacket
+
+def checkSumSetter(self, check:bytes):
+  self.checkSum = check
