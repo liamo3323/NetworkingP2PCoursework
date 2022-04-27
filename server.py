@@ -30,11 +30,11 @@ def serverStart(hostAddress):
 
     serverSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     serverSocket.bind((hostIP, hostPort))
-
-    print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n")
-
     txtfiles = fileReadIn()
-    print("server done")
+    print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n\n Server done!")
+
+
+
     # -------------------------------------------------------
 
     while True:

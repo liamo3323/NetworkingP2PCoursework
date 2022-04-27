@@ -5,7 +5,7 @@ import re
 from typing import Tuple
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder
-from methods import calcPacketSize, multiSendPacket, multiPacketHandle, messageBuilder, listToInt
+from methods import calcPacketSize, multiSendPacket, multiPacketHandle, messageBuilder, listToInt, buildIndexZero
 from constants import bf_Size, hr_Size
 
 
@@ -34,15 +34,18 @@ def clientStart(connectionAddress):
     clientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     clientSocket.settimeout(5) # timeout of 5 is set to allow for request to be sent again when timeout is reached
 
-    time.sleep(2)
-    print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n")
-    print("client done")
+    print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n\n Client done!")
 
     # -------------------------------------------------------
     while True:
         clientRequest = genericRequestBuilder(input())
+        print("\n---loading---\n")
         multiSendPacket (clientRequest, clientSocket )
-        print(messageBuilder(multiPacketHandle(clientSocket, clientRequest)))
+        serverResponse = multiPacketHandle(clientSocket, clientRequest)
+        builtMessage = messageBuilder(serverResponse)
+        if (serverResponse[0].fileIndex == 0):
+            builtMessage = buildIndexZero(builtMessage)
+        print(builtMessage)
 
 def genericRequestBuilder(clientInput:str) ->Packet:
     if (clientInput == "givelist"):

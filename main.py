@@ -6,12 +6,9 @@ import re
 
 # todo list:
 # - format list
-# - make a congif file! 
 # - check what checksum header includes
-# - clean up code a little but 
 # - add comments around the place
 # - check with RFC what else  is there to do? 
-# - ask about zeroth index  
 
 def configuration():
 
