@@ -7,6 +7,7 @@ from constants import hr_Size, bf_Size
 import socket
 import math
 import copy
+import os
 
 global headerSize
 global bufferSize
@@ -26,6 +27,38 @@ def calcPacketSize (data) -> int:
     dataSize = bf_Size - hr_Size
     byteLength = len(str(data).encode('utf-8')) 
     return int(math.ceil(byteLength/dataSize))
+
+
+def listToInt(list:list)->int:
+    total:str = ""
+    for x in list:
+        total = total + x
+    return int(total)
+
+#! come up with better names! 
+
+def fileReadIn()-> str:
+    txtfiles:str = ""
+    ctr = 1
+    readInFileList = os.listdir('./resources')
+    for x in readInFileList:
+        txtfiles = str(ctr) + ":"+str(len(x))+":"+x + "\n"+txtfiles
+        ctr = ctr + 1
+    txtfiles = txtfiles + "\nWhich text file would you like to see?"
+    return txtfiles
+
+def readFilesList() -> list:
+    fileList:list = []
+    files = os.listdir('./resources') # <- this is now a list of files
+    print("[readFileList] files in list: ", files)
+    for x in files:
+        fileLocation = "./resources/"+x
+        IOwrapperFile = open(fileLocation, "r")
+        file = IOwrapperFile.read()
+        fileList.append(file)
+        # print("!![readFileList]!! FILE DOES NOT EXIST")
+    return fileList
+
 
 
 def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:

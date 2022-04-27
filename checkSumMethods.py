@@ -15,17 +15,18 @@ def checkChecksum(packet:Packet)->bool:
     givenChecksum = packet.checkSum
     calculatedChecksum = calcChecksum(buildPacketChecksum(packet))
 
-    print ("given bytes     - ", packet.packet)
-    print ("calcualtd bytes - ", buildPacketChecksum(packet))
+    print ("\n[checkChecksum] incoming packet       - ", packet.packet)
+    print ("[checkChecksum] checksum w/out checksum - ", buildPacketChecksum(packet))
 
-    print("\n\ngiven     ", givenChecksum)
-    print(    "calculated", calculatedChecksum)
+    print("\n[checkChecksum] header checksum - ", givenChecksum)
+    print("[checkChecksum] server calculated - ", calculatedChecksum)
 
     return (givenChecksum == calculatedChecksum)
 
 def calcChecksum(data:bytes)->int:
-    print ("calcchecksum input bytes - ")
-    print(data)
+
+    print ("\n[calcChecksum] input bytes - ", str(data))
+
     x = 0
     for byte in data:
         x = (x + byte) & 0xFFFFFFFF

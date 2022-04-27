@@ -2,6 +2,7 @@ from server import serverStart
 from client import clientStart
 from threading import Thread
 import sys
+import re
 
 # todo list:
 # - format list
@@ -12,68 +13,49 @@ import sys
 # - check with RFC what else  is there to do? 
 # - ask about zeroth index  
 
-def specifyConnectionServer(): #function to ask for user input on PEER hosting IP and PORT
+def configuration():
+
+    # args will be the selected configuration desired! 
+    # arg 1 will be host arg 2 will be connect
+
+    hostIP:str = ""
+    hostPort:int = 0
+    ConnIP:str = ""
+    ConnPort:int = 0
+
     try:
-        if (sys.argv[1] != ""):
-            return ["127.0.0.1", int(sys.argv[1])]
+        if (sys.argv[1] == 'a' and sys.argv[2] == 'b'):
+            return(("127.0.0.1",30000), ("127.0.0.2", 30001))
+
+        elif (sys.argv[1] == 'b' and sys.argv[2] == 'a'):
+            return(("127.0.0.2", 30001),("127.0.0.1",30000))
+
+        elif (sys.argv[1] == "ollie"):
+            hostIP:str = "0.0.0.0"
+            hostPort:int = 6969
+            ConnIP:str = "10.77.38.136"
+            ConnPort:int = 10000
+            return((hostIP,hostPort),(ConnIP,ConnPort))
+        
+        elif (sys.argv[1] != '' and sys.argv[2] != ''):
+             return (splitArg(sys.argv[1]),(splitArg(sys.argv[1])))
+    
     except:
-        print()
-    ip = input("Server: What ip would you like to host on?: ")
-    port = input("Server: What port would you like to host on?: ")
+        print("-----------------------------\n[main] No Arguments detected!\n-----------------------------\n")
+        hostIP      = input("[main] What ip would you like to host on?: ")
+        hostPort    = int(input("[main] What port would you like to host on?: "))
+        
+        ConnIP      = input("[main] What ip would you like to connect to?: ")
+        ConnPort    = int(input("[main] What port would you like to connect to?: "))
+        return ((hostIP, hostPort),(ConnIP,ConnPort))
 
-    # lh1 and lh0 are 2 different local host values for testing purposes
-    # ports 'a' and 'b' are also for testing purposes
-    if (ip ==  "ollie"):
-        return ["0.0.0.0", 6969]
+def splitArg(argument:str):
+    args = re.split(":", argument)
+    return(args[0],int(args[1]))
 
-    if (ip == "lh1"):
-        ip = "127.0.0.1"
-    
-    elif (ip == "lh0"):
-        ip = "127.0.0.0"   
-
-    if (port == "a"):
-        port = "2000"
-    
-    elif (port == "b"):
-        port = "2001"
-
-    return [ip, int(port)]
-
-def specifyConnectionClient(): #function to ask for user input on IP and PORT PEER will connect to
-    try: 
-        if (sys.argv[2] != ""):
-            return ["127.0.0.1", int(sys.argv[2])]
-    except:
-        print()
-    ip = input("Client: What ip would you like to connect to?: ")
-    port = input("Client: What port would you like to connect to?: ")
-
-    # lh1 and lh0 are 2 different local host values for testing purposes
-    # ports 'a' and 'b' are also for testing purposes
-
-    if (ip ==  "ollie"):
-        return ["10.77.38.136", 10000]
-
-    if (ip == "lh1"):
-        ip = "127.0.0.1"
-    
-    elif (ip == "lh0"):
-        ip = "127.0.0.0"    
-
-    if (port == "a"):
-        port = "2000"
-    
-    elif (port == "b"):
-        port = "2001"
-
-    return [ip, int(port)]
-
-# host location and connecting address are always asked before creating threads 
-connectionAddress = specifyConnectionClient()
-hostAddress = specifyConnectionServer()
+config = configuration()
 
 # threading to run a client instance and server instance for PEER to PEER to work
 if __name__ == '__main__':
-    Thread(target = serverStart, args=(hostAddress,)).start()
-    Thread(target = clientStart, args=(connectionAddress,)).start()
+    Thread(target = serverStart, args=(config[0],)).start()
+    Thread(target = clientStart, args=(config[1],)).start()

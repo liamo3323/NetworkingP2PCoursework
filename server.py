@@ -5,7 +5,7 @@ from io import BufferedWriter, TextIOWrapper
 from client import genericRequestBuilder
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder, objToPacket
-from methods import calcPacketSize, multiPacketHandle, messageBuilder, multiSendPacket
+from methods import calcPacketSize, multiPacketHandle, messageBuilder, multiSendPacket, fileReadIn, readFilesList
 from checkSumMethods import calcChecksum, buildPacketChecksum, checkChecksum
 from constants import bf_Size, hr_Size
 
@@ -44,49 +44,29 @@ def serverStart(hostAddress):
 def handler():
     packet:Packet = packetBuilder( serverSocket.recvfrom(bufferSize))
 
-    #! checking if checksum is right
     if (checkChecksum(packet)):
-
-        print(packet.packet)
-        if (packet.type == 1): #-request
+        if (packet.type == 1):
             if (packet.fileIndex == 0):
                 printFilesList(packet)
+
             elif (packet.fileIndex > 0):
                 fileRequest(packet)
         else:
-            print("!!ERROR UNKNOWN HEADER REQUEST TYPE!!")
+            print("!![SERVER]!! ERROR UNKNOWN HEADER TYPE!!!")
+    else:
+        print("!![SERVER]!! REQUEST CHECKSUM AND CALCULATED CHECKSUM DO NOT MATCH")
+        print("!![SERVER]!! PACKET CHECKSUM - ", packet.checkSum)
+        print("!![SERVER]!! CALCU  CHECKSUM - ", calcChecksum(buildPacketChecksum(packet)))
         
-def fileReadIn()-> str:
-    txtfiles = ""
-    files = os.listdir('./resources') # <- this is now a list of files
-    ctr = 1
-    for x in files:
-        fileLocation = "./resources/"+x
-        IOwrapperFile = open(fileLocation, "r")
-        file = IOwrapperFile.read()
-        txtfiles = str(ctr) + ":"+str(len(file))+":"+x + "\n"+txtfiles
-        ctr = ctr + 1
-    txtfiles = txtfiles + "\nWhich text file would you like to see?"
-    return txtfiles
 
 def fileRequest(packet: Packet):
-    files = os.listdir('./resources')
-    try:
-        reqFileName = files[packet.fileIndex-1]
-        fileLocation = "./resources/"+reqFileName
-        IOwrapperFile = open(fileLocation, "r")
-        file = IOwrapperFile.read()
-        #multiSendPacket(Packet(MessageType.RES, calcPacketSize(file), str(file).encode('utf-8'), packet.ip, packet.port, packetFileIndex = packet.fileIndex-1,), serverSocket)
 
-    except:
-        return ("!!File does not exist!!")
-        #? file is a list of files that the computer has read in
-        #! I need to then split the files 
-
-        #! Loop below will split the requested file index into the correct data sizes 
-
+    filesList:list = readFilesList()
     packetList:list[Packet] = []
     dataSize = bufferSize - headerSize
+    file = filesList[packet.fileIndex-1]
+    
+    #? This could be made into a method or try to support caching in the future?
     for x in range (calcPacketSize(file)):
         start = x * dataSize
         end   = (x+1)*dataSize
@@ -94,6 +74,7 @@ def fileRequest(packet: Packet):
             end = end-(end-len(file))
         splitMsg = file[start:end]
         splitMsg = str(splitMsg).encode('utf-8')
+    
         packetToSend = copy.copy(packet)
         packetToSend.lastSliceIndex = calcPacketSize(file)
         packetToSend.packetData = splitMsg
@@ -107,5 +88,6 @@ def fileRequest(packet: Packet):
 
 
 def printFilesList(packet: Packet): 
+    #! this will send an edge case where characters are more than buffer size!!! ERROR!
     multiSendPacket(Packet(MessageType.RES, calcPacketSize(txtfiles), str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket)
 

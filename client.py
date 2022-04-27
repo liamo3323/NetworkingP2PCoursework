@@ -5,7 +5,7 @@ import re
 from typing import Tuple
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder
-from methods import calcPacketSize, multiSendPacket, multiPacketHandle, messageBuilder
+from methods import calcPacketSize, multiSendPacket, multiPacketHandle, messageBuilder, listToInt
 from constants import bf_Size, hr_Size
 
 
@@ -47,17 +47,14 @@ def clientStart(connectionAddress):
 def genericRequestBuilder(clientInput:str) ->Packet:
     if (clientInput == "givelist"):
         return Packet(MessageType.REQ, calcPacketSize(headerSize), bytes(), targetIP, targetPort)
+    
     elif (re.search("^req", clientInput)):
         number = listToInt(re.findall("\d", clientInput))
         fileRequestPac = Packet(MessageType.REQ, calcPacketSize(headerSize), bytes(), targetIP, targetPort, number)
         fileRequestPac.fileIndex = number
         return (fileRequestPac)
+    
     else:
-        print("!!!ERROR INVALID REQUEST!!!")
+        print("!![CLIENT]!! ERROR INVALID REQUEST!!!")
         return Packet(MessageType.REQ, 0, bytes(), "", 0)
 
-def listToInt(list:list)->int:
-    total:str = ""
-    for x in list:
-        total = total + x
-    return int(total)
