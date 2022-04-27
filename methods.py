@@ -16,6 +16,8 @@ global bufferSize
 headerSize = hr_Size
 bufferSize = bf_Size
 
+
+
 def messageBuilder(listPacket:list[Packet])-> str:  # Using a list of packets recieved from the server, the method will 
                                                     # decode the bytes of data from the slices and concatonate to a singular string message
     data = ""
@@ -102,6 +104,7 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
                         responsePacket:Packet = copy.copy(recievedPacket)
                         responsePacket.sliceIndex += 1
                         responsePacket.checkSum = calcChecksum(buildPacketChecksum(responsePacket))
+                        responsePacket.bodyLength = len(objToPacket(responsePacket))
                         socket.sendto(objToPacket(responsePacket), responsePacket.address)
 
         except Exception as e:
@@ -136,6 +139,7 @@ def multiSendPacket(packet: Packet, socket: socket.socket):
         
     for x in packetList:
         x.checkSum = calcChecksum(buildPacketChecksum(x))
+        x.bodyLength = len(objToPacket(x))        
         socket.sendto(objToPacket(x), x.address)
 
         # print("\nbuild packet checksum", buildPacketChecksum(x))

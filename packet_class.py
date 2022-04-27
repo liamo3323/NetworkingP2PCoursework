@@ -15,7 +15,7 @@ class Packet: # constructor method which will create a packet object
     #* Slice index - is used to declare for the client which slice it wants to retrieve.
     #* Last slice index - The last slice index for a given file index
     #* File Index - index of the resource the client tries to obtain.
-    #* Body length - size of the slice <-- [this can be done later!] 
+    #* Body length - size of the slice
     #* Body - contains the slice
 
     # it will instantialize the packet variables into the object with the help of default values

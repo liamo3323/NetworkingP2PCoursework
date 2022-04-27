@@ -84,6 +84,7 @@ def fileRequest(packet: Packet):
     requestedSlice = packetList[packet.sliceIndex-1]
     requestedSlice.sliceIndex = packet.sliceIndex
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
+    requestedSlice.bodyLength = len(objToPacket(requestedSlice))
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
 
 
@@ -112,4 +113,5 @@ def printFilesList(packet: Packet):
     requestedSlice = packetList[packet.sliceIndex-1]
     requestedSlice.sliceIndex = packet.sliceIndex
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
+    requestedSlice.bodyLength = len(objToPacket(requestedSlice))    
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
