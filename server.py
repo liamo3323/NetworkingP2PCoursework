@@ -89,5 +89,27 @@ def fileRequest(packet: Packet):
 
 def printFilesList(packet: Packet): 
     #! this will send an edge case where characters are more than buffer size!!! ERROR!
-    multiSendPacket(Packet(MessageType.RES, calcPacketSize(txtfiles), str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket)
+    # multiSendPacket(Packet(MessageType.RES, calcPacketSize(txtfiles), str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket)
 
+    packetList:list[Packet] = []
+    dataSize = bufferSize - headerSize
+    
+    #? This could be made into a method or try to support caching in the future?
+    for x in range (calcPacketSize(txtfiles)):
+        start = x * dataSize
+        end   = (x+1)*dataSize
+        if ( end > len(txtfiles)):
+            end = end-(end-len(txtfiles))
+        splitMsg = txtfiles[start:end]
+        splitMsg = str(splitMsg).encode('utf-8')
+    
+        packetToSend = copy.copy(packet)
+        packetToSend.lastSliceIndex = calcPacketSize(txtfiles)
+        packetToSend.packetData = splitMsg
+        packetList.append(packetToSend) 
+
+
+    requestedSlice = packetList[packet.sliceIndex-1]
+    requestedSlice.sliceIndex = packet.sliceIndex
+    requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
+    serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)

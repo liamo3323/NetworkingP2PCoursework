@@ -1,2 +1,2 @@
-bf_Size = 300
+bf_Size = 400
 hr_Size = 19

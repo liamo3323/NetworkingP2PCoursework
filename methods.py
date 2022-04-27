@@ -50,7 +50,7 @@ def fileReadIn()-> str:
 def readFilesList() -> list:
     fileList:list = []
     files = os.listdir('./resources') # <- this is now a list of files
-    print("[readFileList] files in list: ", files)
+    # print("[readFileList] files in list: ", files)
     for x in files:
         fileLocation = "./resources/"+x
         IOwrapperFile = open(fileLocation, "r")
@@ -124,8 +124,6 @@ def multiSendPacket(packet: Packet, socket: socket.socket):
         ctr = ctr +  1
         
     for x in packetList:
-        print("build packet checksum", buildPacketChecksum(x))
-        print ("calcu checksum w/ build", calcChecksum(buildPacketChecksum(x)))
         x.checkSum = calcChecksum(buildPacketChecksum(x))
         socket.sendto(objToPacket(x), x.address)
 
