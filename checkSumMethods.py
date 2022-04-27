@@ -1,6 +1,7 @@
 from packet_class import Packet
 
-def buildPacketChecksum(packet:Packet)->bytes:
+def buildPacketChecksum(packet:Packet)->bytes:  # using the packet object this helper method will create a temp packet that does not 
+                                                # hold the checksum to be used to calculate the recieved slice's checksum
     encodedHeader = ((0).to_bytes(4, 'little')
     + packet.type.to_bytes(1, 'little')
     + packet.sliceIndex.to_bytes(4, 'little') 
@@ -10,7 +11,7 @@ def buildPacketChecksum(packet:Packet)->bytes:
 
     return encodedHeader+packet.packetData
 
-def checkChecksum(packet:Packet)->bool:
+def checkChecksum(packet:Packet)->bool: # returns a bool if checksum's given from slice and packet are the same
 
     givenChecksum = packet.checkSum
     calculatedChecksum = calcChecksum(buildPacketChecksum(packet))
@@ -23,7 +24,7 @@ def checkChecksum(packet:Packet)->bool:
 
     return (givenChecksum == calculatedChecksum)
 
-def calcChecksum(data:bytes)->int:
+def calcChecksum(data:bytes)->int: # algorithm used to calculate the checksum
 
     # print ("\n[calcChecksum] input bytes - ", str(data))
 

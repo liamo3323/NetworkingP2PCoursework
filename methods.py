@@ -1,6 +1,6 @@
 from ipaddress import ip_address
 from logging import exception
-from packet_class import Packet, packetBuilder, objToPacket, checkSumSetter
+from packet_class import Packet, packetBuilder, objToPacket
 from checkSumMethods import checkChecksum, calcChecksum, buildPacketChecksum
 from headerEnums import MessageType
 from constants import hr_Size, bf_Size
@@ -16,28 +16,27 @@ global bufferSize
 headerSize = hr_Size
 bufferSize = bf_Size
 
-def messageBuilder(listPacket:list[Packet])-> str:
+def messageBuilder(listPacket:list[Packet])-> str:  # Using a list of packets recieved from the server, the method will 
+                                                    # decode the bytes of data from the slices and concatonate to a singular string message
     data = ""
     for x in listPacket:
         data = data + (x.packetData.decode())
     return data
 
 
-def calcPacketSize (data) -> int:
+def calcPacketSize (data) -> int:               # calcPacketSize will calculate how many slices will be neede to send the data wanting to be sent
     dataSize = bf_Size - hr_Size
     byteLength = len(str(data).encode('utf-8')) 
     return int(math.ceil(byteLength/dataSize))
 
 
-def listToInt(list:list)->int:
+def listToInt(list:list)->int:                  # 
     total:str = ""
     for x in list:
         total = total + x
     return int(total)
 
-#! come up with better names! 
-
-def fileReadIn()-> str:
+def fileReadIn()-> str: # from the ./resources folder, it will lead the file name of each file in the folder directory
     txtfiles:str = ""
     ctr = 1
     readInFileList = os.listdir('./resources')
@@ -47,7 +46,7 @@ def fileReadIn()-> str:
     txtfiles = txtfiles + "\nWhich text file would you like to see?"
     return txtfiles
 
-def readFilesList() -> list:
+def readFilesList() -> list: # readFilesList will return a list of each item's content
     fileList:list = []
     files = os.listdir('./resources') # <- this is now a list of files
     # print("[readFileList] files in list: ", files)
@@ -60,7 +59,8 @@ def readFilesList() -> list:
     return fileList
 
 
-def buildIndexZero(builtMsg:str):
+def buildIndexZero(builtMsg:str): # helps  previwing file index 0 response using the agreed file format
+
     # logic is that for each \n make a new item in the list and then split on each item
     
     PrintList:str = ""

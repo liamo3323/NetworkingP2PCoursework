@@ -4,7 +4,7 @@ from typing import Tuple
 from headerEnums import MessageType
 from constants import hr_Size
 
-class Packet:
+class Packet: # constructor method which will create a packet object
   #def __init__(self, type: MessageType, packetSliceIndex:int, packetLastSliceIndex:int, packetCheck:int, pacBodyLength:int, packetFileIndex:int, packetData:bytes, ip: str, port: int):
   def __init__(self, type: MessageType, packetLastSliceIndex:int, packetData:bytes, ip: str, port: int, packetFileIndex:int = 0, packetSliceIndex:int = 1, packetCheck:int = 0, pacBodyLength:int =0):
   
@@ -18,6 +18,7 @@ class Packet:
     #* Body length - size of the slice <-- [this can be done later!] 
     #* Body - contains the slice
 
+    # it will instantialize the packet variables into the object with the help of default values
     self.checkSum = packetCheck
     self.type = type.value
     self.sliceIndex = packetSliceIndex
@@ -26,7 +27,6 @@ class Packet:
     self.bodyLength = pacBodyLength
 
     # ? ORDER OF HEADER: checksum > message type > slice index > last slice index > file index > body  length > Body...
-
     self.encodedHeader = (self.checkSum.to_bytes(4, 'little')
     + self.type.to_bytes(1, 'little')
     + self.sliceIndex.to_bytes(4, 'little') 
@@ -44,6 +44,7 @@ def packetBuilder(inPacket: Tuple)-> Packet:
 
     # ? ORDER OF HEADER: checksum > message type > slice index > last slice index > file index > body  length > Body...
 
+    # after listening to a socket, this helper method will create a new packet object for ease of use.
     pData           = inPacket[0]
     pAddress        = inPacket[1]
 
@@ -60,7 +61,9 @@ def packetBuilder(inPacket: Tuple)-> Packet:
     packetIP        = pAddress[0]
     packetPort      = pAddress[1]
     return(Packet( MessageType(pacType), pacFinSliceIdx,   packetData,   packetIP, packetPort, packetSliceIndex=pacSliceIdx, packetCheck=pacCheck, pacBodyLength = pacBodyLength, packetFileIndex = pacFileIdx,) )
-def objToPacket(packet:Packet) -> bytes:
+
+
+def objToPacket(packet:Packet) -> bytes: # after manipulating the packet object, the slice has to be recreated from the object
     encodedHeader = (packet.checkSum.to_bytes(4, 'little')
     + packet.type.to_bytes(1, 'little')
     + packet.sliceIndex.to_bytes(4, 'little') 
@@ -70,6 +73,3 @@ def objToPacket(packet:Packet) -> bytes:
 
     fullPacket = encodedHeader+packet.packetData
     return fullPacket
-
-def checkSumSetter(self, check:bytes):
-  self.checkSum = check
