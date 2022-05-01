@@ -30,7 +30,7 @@ def clientStart(connectionAddress):
     targetPort = connectionAddress[1]
 
     clientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    clientSocket.settimeout(5) # timeout of 5 is set to allow for request to be sent again when timeout is reached
+    clientSocket.settimeout(50) # timeout of 5 is set to allow for request to be sent again when timeout is reached
 
     # sleep timer is to prevent client loaded and server loaded message to have runtime issue both printing at the same time over each other
     time.sleep(0.1)
@@ -43,16 +43,16 @@ def clientStart(connectionAddress):
     # -------------------------------------------------------
     while True:
         # Requests are made dependent on what user input is
-        clientRequest = genericRequestBuilder(input())                  # generticRequestBuilder makes a generic request for a file using user input
+        clientRequest = genericRequestBuilder(input())                      # generticRequestBuilder makes a generic request for a file using user input
         print("\n---loading---\n")
-        multiSendPacket (clientRequest, clientSocket )                  # multiSendPacket splits packets up into slices and sends them off to an address
-        serverResponse = multiPacketHandle(clientSocket, clientRequest) # client then listens for packet resposne from server and loads into serverResponse
-        builtMessage = messageBuilder(serverResponse)                   # the serverResponse fully build packet is then read into messageBuilder to concatonate the decoded UTF-8  slices into a singular message
+        multiSendPacket (clientRequest, clientSocket )                      # multiSendPacket splits packets up into slices and sends them off to an address
+        serverResponse = multiPacketHandle(clientSocket, clientRequest)     # client then listens for packet resposne from server and loads into serverResponse
+        builtMessage = messageBuilder(serverResponse)                       # the serverResponse fully build packet is then read into messageBuilder to concatonate the decoded UTF-8  slices into a singular message
         if (serverResponse[0].fileIndex == 0):
-            builtMessage = buildIndexZero(builtMessage)                 # However, if the packet returned is a list of all files connected PEER has, it will maniulate the string and make it more readable for users
-        print(builtMessage)                                             # this is possible because a specific format the 0th file index will be sent in has been written on the RFC
+            builtMessage = buildIndexZero(builtMessage)                     # However, if the packet returned is a list of all files connected PEER has, it will maniulate the string and make it more readable for users
+        print(builtMessage)                                                 # this is possible because a specific format the 0th file index will be sent in has been written on the RFC
 
-def genericRequestBuilder(clientInput:str) ->Packet:                    # helper method which will return different requests depending on user input
+def genericRequestBuilder(clientInput:str) ->Packet:                        # helper method which will return different requests depending on user input
     if (clientInput == "givelist"):
         return Packet(MessageType.REQ, calcPacketSize(headerSize), bytes(), targetIP, targetPort)
     

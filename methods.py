@@ -103,8 +103,8 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
                     else:
                         responsePacket:Packet = copy.copy(recievedPacket)
                         responsePacket.sliceIndex += 1
+                        responsePacket.bodyLength = len(objToPacket(responsePacket))                        
                         responsePacket.checkSum = calcChecksum(buildPacketChecksum(responsePacket))
-                        responsePacket.bodyLength = len(objToPacket(responsePacket))
                         socket.sendto(objToPacket(responsePacket), responsePacket.address)
 
         except Exception as e:
@@ -138,8 +138,9 @@ def multiSendPacket(packet: Packet, socket: socket.socket):
         ctr = ctr +  1
         
     for x in packetList:
+        x.bodyLength = len(objToPacket(x))  
         x.checkSum = calcChecksum(buildPacketChecksum(x))
-        x.bodyLength = len(objToPacket(x))        
+        print("Client Sending...", objToPacket(x))
         socket.sendto(objToPacket(x), x.address)
 
         # print("\nbuild packet checksum", buildPacketChecksum(x))

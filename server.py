@@ -43,7 +43,7 @@ def serverStart(hostAddress):
 
 def handler():
     packet:Packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-
+    print("[Server] Packet Recieved!")
     if (checkChecksum(packet)):
         if (packet.type == 1):
             if (packet.fileIndex == 0):
@@ -83,8 +83,8 @@ def fileRequest(packet: Packet):
 
     requestedSlice = packetList[packet.sliceIndex-1]
     requestedSlice.sliceIndex = packet.sliceIndex
+    requestedSlice.bodyLength = len(objToPacket(requestedSlice))    
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
-    requestedSlice.bodyLength = len(objToPacket(requestedSlice))
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
 
 
@@ -112,6 +112,6 @@ def printFilesList(packet: Packet):
 
     requestedSlice = packetList[packet.sliceIndex-1]
     requestedSlice.sliceIndex = packet.sliceIndex
+    requestedSlice.bodyLength = len(objToPacket(requestedSlice))        
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
-    requestedSlice.bodyLength = len(objToPacket(requestedSlice))    
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
