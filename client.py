@@ -1,3 +1,4 @@
+from email.message import Message
 from email.mime import multipart
 import socket
 import time
@@ -34,13 +35,13 @@ def clientStart(connectionAddress):
 
     # sleep timer is to prevent client loaded and server loaded message to have runtime issue both printing at the same time over each other
     time.sleep(0.1)
-    print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n\n Client done!")
+    print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n\n Client done!\n")
 
     # Once the client has loaded, it makes a request to the server for the 0th index as stated in the RFC
     clientRequest = genericRequestBuilder("givelist")
     multiSendPacket (clientRequest, clientSocket )
     print( buildIndexZero(messageBuilder(multiPacketHandle(clientSocket, clientRequest))))
-    # -------------------------------------------------------
+    # -------------------------------------------------------------------------------------------------------------------------
     while True:
         # Requests are made dependent on what user input is
         clientRequest = genericRequestBuilder(input())                      # generticRequestBuilder makes a generic request for a file using user input
@@ -64,5 +65,5 @@ def genericRequestBuilder(clientInput:str) ->Packet:                        # he
     
     else:
         print("!![CLIENT]!! ERROR INVALID REQUEST!!!")
-        return Packet(MessageType.REQ, 0, bytes(), "", 0)
+        return Packet(MessageType.fake, 0, bytes(), "", 0)
 

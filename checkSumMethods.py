@@ -19,8 +19,8 @@ def checkChecksum(packet:Packet)->bool: # returns a bool if checksum's given fro
     # print ("\n[checkChecksum] incoming packet       - ", packet.packet)
     # print ("[checkChecksum] checksum w/out checksum - ", buildPacketChecksum(packet))
 
-    # print("\n[checkChecksum] header checksum - ", givenChecksum)
-    # print("[checkChecksum] server calculated - ", calculatedChecksum)
+    print("\n[checkChecksum] header checksum   - ", givenChecksum)
+    print("[checkChecksum] server calculated - ", calculatedChecksum)
 
     return (givenChecksum == calculatedChecksum)
 
@@ -30,5 +30,5 @@ def calcChecksum(data:bytes)->int: # algorithm used to calculate the checksum
 
     x = 0
     for byte in data:
-        x = (x + byte) & 0xFFFFFFFF
-    return (((x ^ 0xFFFFFFFF) +1) & 0xFFFFFFFF)
+        x = (x + byte) & 0xFF
+    return (((x ^ 0xFF) +1) & 0xFF)

@@ -85,23 +85,21 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
         timeoutCtr = 0
         try:
             incomingPacket = socket.recvfrom(bufferSize)
-
             #! check checksum
             recievedPacket:Packet = packetBuilder(incomingPacket)
-
+            print("[Client] Response recieved... packet size: ", len(recievedPacket.packet))
             if (checkChecksum(recievedPacket)): #! <- this is a tuple
 
                 if (incomingPacket[1] == packetResend.address):
                     if (len(packetList) == 0):
                         packetList.append(recievedPacket)
-
                     elif ( recievedPacket.sliceIndex == ((packetList[len(packetList)-1].sliceIndex)+1) ):
                         packetList.append(recievedPacket)
-                    
                     if (packetList[len(packetList)-1].sliceIndex == packetList[len(packetList)-1].lastSliceIndex):
                         break
                     else:
                         responsePacket:Packet = copy.copy(recievedPacket)
+                        responsePacket.type = MessageType.REQ.value
                         responsePacket.sliceIndex += 1
                         responsePacket.bodyLength = len(objToPacket(responsePacket))                        
                         responsePacket.checkSum = calcChecksum(buildPacketChecksum(responsePacket))
@@ -138,6 +136,7 @@ def multiSendPacket(packet: Packet, socket: socket.socket):
         ctr = ctr +  1
         
     for x in packetList:
+        x.type = MessageType.REQ.value
         x.bodyLength = len(objToPacket(x))  
         x.checkSum = calcChecksum(buildPacketChecksum(x))
         print("Client Sending...", objToPacket(x))

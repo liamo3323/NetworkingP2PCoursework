@@ -31,7 +31,7 @@ def serverStart(hostAddress):
     serverSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     serverSocket.bind((hostIP, hostPort))
     txtfiles = fileReadIn()
-    print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n\n Server done!")
+    print("\nUDP Server up! \nServerIP: ", str(hostIP),"\nServerPort: ", str(hostPort), "\nBuffer Size: ", str(bufferSize),"\n\n Server done!\n")
 
 
 
@@ -43,14 +43,16 @@ def serverStart(hostAddress):
 
 def handler():
     packet:Packet = packetBuilder( serverSocket.recvfrom(bufferSize))
-    print("[Server] Packet Recieved!")
+    print("[Server] Packet Recieved! Packet size: ", len(objToPacket(packet)))
     if (checkChecksum(packet)):
         if (packet.type == 1):
             if (packet.fileIndex == 0):
                 printFilesList(packet)
 
-            elif (packet.fileIndex > 0):
+            elif (packet.fileIndex > 0 and packet.fileIndex <= len(readFilesList())):
                 fileRequest(packet)
+            else:
+                print("!![SERVER]!! REQUEST FILE INDEX DOES NOT EXIST")
         else:
             print("!![SERVER]!! ERROR UNKNOWN HEADER TYPE!!!")
     else:
@@ -66,7 +68,6 @@ def fileRequest(packet: Packet):
     dataSize = bufferSize - headerSize
     file = filesList[packet.fileIndex-1]
     
-    #? This could be made into a method or try to support caching in the future?
     for x in range (calcPacketSize(file)):
         start = x * dataSize
         end   = (x+1)*dataSize
@@ -85,17 +86,14 @@ def fileRequest(packet: Packet):
     requestedSlice.sliceIndex = packet.sliceIndex
     requestedSlice.bodyLength = len(objToPacket(requestedSlice))    
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
+    print("[Server] Server is repsonding with...",objToPacket(requestedSlice))
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
 
 
 def printFilesList(packet: Packet): 
-    #! this will send an edge case where characters are more than buffer size!!! ERROR!
-    # multiSendPacket(Packet(MessageType.RES, calcPacketSize(txtfiles), str(txtfiles).encode('utf-8'), packet.ip, packet.port), serverSocket)
-
     packetList:list[Packet] = []
     dataSize = bufferSize - headerSize
-    
-    #? This could be made into a method or try to support caching in the future?
+
     for x in range (calcPacketSize(txtfiles)):
         start = x * dataSize
         end   = (x+1)*dataSize
@@ -114,4 +112,5 @@ def printFilesList(packet: Packet):
     requestedSlice.sliceIndex = packet.sliceIndex
     requestedSlice.bodyLength = len(objToPacket(requestedSlice))        
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
+    print("[Server] Server is repsonding with...",objToPacket(requestedSlice))
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
