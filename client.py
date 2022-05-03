@@ -38,14 +38,14 @@ def clientStart(connectionAddress):
     print("\nUDP client up connecting to!\nClientIP: ",str(targetIP),"\nclientPort: ",str(targetPort),"\nBuffer Size: ", str(bufferSize),"\n\n Client done!\n")
 
     # Once the client has loaded, it makes a request to the server for the 0th index as stated in the RFC
-    clientRequest = genericRequestBuilder("givelist")
+    clientRequest = Packet(MessageType.REQ, calcPacketSize(headerSize), bytes(), targetIP, targetPort)
     multiSendPacket (clientRequest, clientSocket )
     print( buildIndexZero(messageBuilder(multiPacketHandle(clientSocket, clientRequest))))
     # -------------------------------------------------------------------------------------------------------------------------
     while True:
         # Requests are made dependent on what user input is
-        clientRequest = genericRequestBuilder(input())                      # generticRequestBuilder makes a generic request for a file using user input
-        print("\n---loading---\n")
+        clientRequest = genericRequestBuilder()                      # generticRequestBuilder makes a generic request for a file using user input
+        print("\n[Client] ---loading---\n")
         multiSendPacket (clientRequest, clientSocket )                      # multiSendPacket splits packets up into slices and sends them off to an address
         serverResponse = multiPacketHandle(clientSocket, clientRequest)     # client then listens for packet resposne from server and loads into serverResponse
         builtMessage = messageBuilder(serverResponse)                       # the serverResponse fully build packet is then read into messageBuilder to concatonate the decoded UTF-8  slices into a singular message
@@ -53,17 +53,18 @@ def clientStart(connectionAddress):
             builtMessage = buildIndexZero(builtMessage)                     # However, if the packet returned is a list of all files connected PEER has, it will maniulate the string and make it more readable for users
         print(builtMessage)                                                 # this is possible because a specific format the 0th file index will be sent in has been written on the RFC
 
-def genericRequestBuilder(clientInput:str) ->Packet:                        # helper method which will return different requests depending on user input
+def genericRequestBuilder() ->Packet:                        # helper method which will return different requests depending on user input
+    clientInput = input()
     if (clientInput == "givelist"):
         return Packet(MessageType.REQ, calcPacketSize(headerSize), bytes(), targetIP, targetPort)
     
-    elif (re.search("^req", clientInput)):
+    elif (re.search("^req", clientInput.lower())):
         number = listToInt(re.findall("\d", clientInput))
         fileRequestPac = Packet(MessageType.REQ, calcPacketSize(headerSize), bytes(), targetIP, targetPort, number)
         fileRequestPac.fileIndex = number
         return (fileRequestPac)
     
     else:
-        print("!![CLIENT]!! ERROR INVALID REQUEST!!!")
-        return Packet(MessageType.fake, 0, bytes(), "", 0)
+        print("!![CLIENT]!! ERROR INVALID REQUEST! PLEASE ENTER A LEGAL REQUEST TYPE!!!")
+        return genericRequestBuilder()
 
