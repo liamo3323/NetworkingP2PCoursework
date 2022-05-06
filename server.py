@@ -44,7 +44,7 @@ def serverStart(hostAddress):
 def handler():
     packet:Packet = packetBuilder( serverSocket.recvfrom(bufferSize))
     print("[Server] Packet Recieved! Packet size: ", len(objToPacket(packet)))
-    if (checkChecksum(packet)):
+    if (checkChecksum(packet) and packet.sliceIndex != 0):
         if (packet.type == 1):
             if (packet.fileIndex == 0):
                 printFilesList(packet)
