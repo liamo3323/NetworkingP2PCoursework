@@ -101,7 +101,7 @@ def multiPacketHandle( socket: socket.socket, packetResend:Packet)-> list:
                         responsePacket:Packet = copy.copy(recievedPacket)
                         responsePacket.type = MessageType.REQ.value
                         responsePacket.sliceIndex += 1
-                        responsePacket.bodyLength = len(objToPacket(responsePacket))                        
+                        responsePacket.bodyLength = (len(objToPacket(responsePacket)) - headerSize)                        
                         responsePacket.checkSum = calcChecksum(buildPacketChecksum(responsePacket))
                         socket.sendto(objToPacket(responsePacket), responsePacket.address)
 
@@ -137,7 +137,8 @@ def multiSendPacket(packet: Packet, socket: socket.socket):
         
     for x in packetList:
         x.type = MessageType.REQ.value
-        x.bodyLength = len(objToPacket(x))  
+
+        x.bodyLength = (len(objToPacket(x))-headerSize)  
         x.checkSum = calcChecksum(buildPacketChecksum(x))
         print("Client Sending...", objToPacket(x))
         socket.sendto(objToPacket(x), x.address)
