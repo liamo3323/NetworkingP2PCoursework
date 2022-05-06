@@ -1,7 +1,9 @@
 from ast import Str
 from distutils.text_file import TextFile
+from email.message import Message
 from http import server
 from io import BufferedWriter, TextIOWrapper
+from wsgiref import headers
 from client import genericRequestBuilder
 from headerEnums import MessageType
 from packet_class import Packet, packetBuilder, objToPacket
@@ -43,7 +45,9 @@ def serverStart(hostAddress):
 
 def handler():
     packet:Packet = packetBuilder( serverSocket.recvfrom(bufferSize))
+    print("[Server] Packet Recieved! Packet: ", (packet.packet))
     print("[Server] Packet Recieved! Packet size: ", len(objToPacket(packet)))
+
     if (checkChecksum(packet) and packet.sliceIndex != 0):
         if (packet.type == 1):
             if (packet.fileIndex == 0):
@@ -84,7 +88,9 @@ def fileRequest(packet: Packet):
 
     requestedSlice = packetList[packet.sliceIndex-1]
     requestedSlice.sliceIndex = packet.sliceIndex
-    requestedSlice.bodyLength = len(objToPacket(requestedSlice))    
+    requestedSlice.bodyLength = (len(objToPacket(requestedSlice))-headerSize)   
+    print("size of requested packet: ", (len(objToPacket(requestedSlice))-headerSize))
+    requestedSlice.type = MessageType.RES.value
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
     print("[Server] Server is repsonding with...",objToPacket(requestedSlice))
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
@@ -110,7 +116,8 @@ def printFilesList(packet: Packet):
 
     requestedSlice = packetList[packet.sliceIndex-1]
     requestedSlice.sliceIndex = packet.sliceIndex
-    requestedSlice.bodyLength = len(objToPacket(requestedSlice))        
+    requestedSlice.bodyLength = len(objToPacket(requestedSlice))
+    requestedSlice.type = MessageType.RES.value  
     requestedSlice.checkSum = calcChecksum(buildPacketChecksum(requestedSlice))
     print("[Server] Server is repsonding with...",objToPacket(requestedSlice))
     serverSocket.sendto(objToPacket(requestedSlice), requestedSlice.address)
