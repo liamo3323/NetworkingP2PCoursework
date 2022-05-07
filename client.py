@@ -31,7 +31,7 @@ def clientStart(connectionAddress):
     targetPort = connectionAddress[1]
 
     clientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    clientSocket.settimeout(50) # timeout of 5 is set to allow for request to be sent again when timeout is reached
+    clientSocket.settimeout(10) # timeout of 5 is set to allow for request to be sent again when timeout is reached
 
     # sleep timer is to prevent client loaded and server loaded message to have runtime issue both printing at the same time over each other
     time.sleep(0.1)
